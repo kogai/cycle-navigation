@@ -253,7 +253,7 @@ float battery_27220_get_BATT_CAP(void)
 }
 float battery_27220_get_BATT_CAP_FULL(void)
 {
-    return bq27220.getRemainCap();
+    return bq27220.getFullChargeCap();
 }
 
 //
