@@ -152,6 +152,16 @@ const char *ui_if_epd_get_WIFI_pwd(void)
 
 //************************************[ screen 5 ]****************************************** battery
 /* 25896 */
+void battery_chg_encharge(void)
+{
+    PPM.enableCharge();
+}
+
+void battery_chg_discharge(void)
+{
+    PPM.disableCharge();
+}
+
 bool battery_25896_is_vaild(void)
 {
     return bq25896_is_init;

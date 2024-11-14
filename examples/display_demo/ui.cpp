@@ -487,7 +487,7 @@ static void create2(lv_obj_t *parent) {
         lv_label_set_text_fmt(label, "%s : %0.1fKHz", "Bandwidth", 125.0);
 
         label = scr2_create_label(scr2_cont);
-        lv_label_set_text_fmt(label, "%s : %d", "SpreadingFactor", 10);
+        lv_label_set_text_fmt(label, "%s : %d", "SpreadingFactor", 12);
 
         label = scr2_create_label(scr2_cont);
         lv_label_set_text_fmt(label, "%s : %d", "CodingRate", 6);
@@ -496,7 +496,7 @@ static void create2(lv_obj_t *parent) {
         lv_label_set_text_fmt(label, "%s : 0x%X", "SyncWord", 0xAB);
 
         label = scr2_create_label(scr2_cont);
-        lv_label_set_text_fmt(label, "%s : %d", "OutputPower", 10);
+        lv_label_set_text_fmt(label, "%s : %d", "OutputPower", 22);
 
         label = scr2_create_label(scr2_cont);
         lv_label_set_text_fmt(label, "%s : %d", "CurrentLimit", 140);
@@ -1304,14 +1304,20 @@ static void battery_data_refr(void)
 
         lv_snprintf(buf, line_max, "%.2fmAh", battery_27220_get_BATT_CAP_FULL());
         battery_set_line(batt_right[9], "CAP BATT Full:", buf);
+
+        if(battery_27220_get_TEMP() > 45.0){
+            battery_chg_discharge();
+        } else {
+            battery_chg_encharge();
+        }
     }
 }
 
 static void batt_refr_timer_event(lv_timer_t *t)
 {
     battery_data_refr();
-    // ui_if_epd_refr(EPD_REFRESH_TIME);
-    ui_epd_refr(EPD_REFRESH_TIME, 2, 2);
+    ui_if_epd_refr(EPD_REFRESH_TIME);
+    // ui_epd_refr(EPD_REFRESH_TIME, 2, 2);
 }
 
 static lv_obj_t * scr7_create_label(lv_obj_t *parent)
@@ -1418,7 +1424,7 @@ NO_BATTERY:
     // back
     scr_back_btn_create(parent, "battery", scr7_btn_event_cb);
     // timer
-    batt_refr_timer = lv_timer_create(batt_refr_timer_event, 5000, NULL);
+    batt_refr_timer = lv_timer_create(batt_refr_timer_event, 15000, NULL);
     lv_timer_pause(batt_refr_timer);
 }
 

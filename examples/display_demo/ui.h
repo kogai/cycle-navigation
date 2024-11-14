@@ -80,6 +80,8 @@ const char *ui_if_epd_get_WIFI_ssid(void);
 const char *ui_if_epd_get_WIFI_pwd(void);
 // battery
 /* 25896 */
+void battery_chg_encharge(void);
+void battery_chg_discharge(void);
 bool battery_25896_is_vaild(void);
 bool battery_25896_is_chr(void);
 void battery_25896_refr(void);
