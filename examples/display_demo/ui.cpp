@@ -4,7 +4,9 @@
 #include "Arduino.h"
 
 #define EPD_REFRESH_TIME 150
-#define UI_PORTRAIT_SCR_MODE 1
+
+#define UI_PORTRAIT_SCR_MODE    1
+#define UI_LORA_AUTO_SEND       0
 
 //************************************[ Other fun ]******************************************
 void scr_back_btn_create(lv_obj_t *parent, const char *text, lv_event_cb_t cb)
@@ -329,6 +331,8 @@ static scr_lifecycle_t screen1 = {
 #endif
 //************************************[ screen 2 ]****************************************** lora
 #if 1
+
+#if UI_LORA_AUTO_SEND // Use keyboard styles
 static lv_obj_t *scr2_cont;
 static lv_obj_t *scr2_cont_info;
 static lv_obj_t *lora_mode_sw;
@@ -456,8 +460,29 @@ static void scr2_btn_event_cb(lv_event_t * e)
     }
 }
 
-static void create2(lv_obj_t *parent) {
+static void ta_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * ta = lv_event_get_target(e);
+    lv_obj_t * kb = (lv_obj_t *)lv_event_get_user_data(e);
+    if(code == LV_EVENT_FOCUSED) {
+        lv_keyboard_set_textarea(kb, ta);
+        lv_obj_clear_flag(kb, LV_OBJ_FLAG_HIDDEN);
+    }
 
+    if(code == LV_EVENT_DEFOCUSED) {
+        lv_keyboard_set_textarea(kb, NULL);
+        lv_obj_add_flag(kb, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    if(code == LV_EVENT_VALUE_CHANGED)
+    {
+        // printf("hello\n");
+        ui_if_epd_refr(EPD_REFRESH_TIME);
+    }
+}
+
+static void create2(lv_obj_t *parent) {
     scr2_cont = lv_obj_create(parent);
     lv_obj_set_size(scr2_cont, lv_pct(49), lv_pct(85));
     lv_obj_set_style_bg_color(scr2_cont, lv_color_hex(EPD_COLOR_BG), LV_PART_MAIN);
@@ -557,7 +582,7 @@ static void create2(lv_obj_t *parent) {
     scr_back_btn_create(parent, "Lora", scr2_btn_event_cb);
 }
 static void entry2(void) {
-    // ui_lora_standby();
+    ui_lora_standby();
 
     lora_lab_cnt = 1;
 
@@ -583,7 +608,239 @@ static void destroy2(void) {
     }
 }
 
-static scr_lifecycle_t screen2 = {
+#else
+
+#define LORA_RECV_INFO_MAX_LINE 12
+
+static int lora_mode_st = LORA_MODE_SEND;
+static lv_obj_t *lora_mode_lab;
+static lv_obj_t *lora_mode_sw;
+static lv_obj_t *keyborad;
+static lv_obj_t *textarea;
+static lv_obj_t *cnt_label;
+static lv_timer_t *lora_send_timer = NULL;
+
+int send_cnt = 0;
+int recv_cnt = 0;
+int lora_lab_cnt = 0;
+
+static lv_obj_t *scr2_cont_info;
+static lv_obj_t *lora_lab_buf[LORA_RECV_INFO_MAX_LINE] = {0};
+
+static void scr2_btn_event_cb(lv_event_t * e)
+{
+    if(e->code == LV_EVENT_CLICKED){
+        ui_if_epd_refr(EPD_REFRESH_TIME);
+        scr_mgr_switch(SCREEN0_ID, false);
+    }
+}
+
+static lv_obj_t * scr2_create_label(lv_obj_t *parent)
+{
+    lv_obj_t *label = lv_label_create(parent);
+    lv_obj_set_width(label, LCD_HOR_SIZE/2-50);
+    lv_obj_set_style_text_font(label, &Font_Mono_Bold_25, LV_PART_MAIN);   
+    // lv_obj_set_style_border_width(label, 1, LV_PART_MAIN);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    return label;
+}
+
+static void lora_send_timer_event(lv_timer_t *t)
+{
+    // if(ui_if_epd_get_LORA() == false) return;
+
+    if(lora_mode_st == LORA_MODE_SEND) return;
+    
+    String str = "";
+
+    if(lora_recv_success) {
+        lora_recv_success = false;
+
+        recv_cnt += strlen(str.c_str());
+
+        lv_label_set_text_fmt(cnt_label, "R:%d", recv_cnt);
+
+        str += lora_recv_data;
+
+        lv_label_set_text_fmt(lora_lab_buf[0], "RECV: %ddm", lora_recv_rssi);
+
+        if(lora_lab_buf[lora_lab_cnt] == NULL) {
+            lora_lab_buf[lora_lab_cnt] = scr2_create_label(scr2_cont_info);
+            lv_label_set_text(lora_lab_buf[lora_lab_cnt], str.c_str());
+        } else {
+            lv_label_set_text(lora_lab_buf[lora_lab_cnt], str.c_str());
+        }
+
+        lora_lab_cnt++;
+        if(lora_lab_cnt >= LORA_RECV_INFO_MAX_LINE) {
+            lora_lab_cnt = 1;
+        }
+        ui_if_epd_refr(EPD_REFRESH_TIME);
+    }
+}
+
+static void lora_mode_sw_event(lv_event_t * e)
+{
+    if(lora_mode_st == LORA_MODE_SEND)
+    {
+        lora_mode_st = LORA_MODE_RECV;
+        lv_obj_add_flag(keyborad, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(textarea, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(scr2_cont_info, LV_OBJ_FLAG_HIDDEN);
+        lv_timer_resume(lora_send_timer);
+        lora_lab_cnt = 1;
+    } 
+    else if(lora_mode_st == LORA_MODE_RECV) 
+    {
+        lora_mode_st = LORA_MODE_SEND;
+        lv_obj_clear_flag(keyborad, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(textarea, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(scr2_cont_info, LV_OBJ_FLAG_HIDDEN);
+        lv_timer_pause(lora_send_timer);
+    }
+
+    lv_label_set_text_fmt(lora_mode_lab, "MODE : %s", (lora_mode_st == LORA_MODE_SEND)? "SEND" : "RECV");
+
+    ui_if_epd_refr(EPD_REFRESH_TIME);
+}
+
+static void ta_event_cb(lv_event_t * e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t * ta = lv_event_get_target(e);
+    lv_obj_t * kb = (lv_obj_t *)lv_event_get_user_data(e);
+
+    if(code == LV_EVENT_VALUE_CHANGED)
+    {
+        // printf("LV_EVENT_VALUE_CHANGED\n");
+        ui_if_epd_refr(EPD_REFRESH_TIME);
+    }
+
+    if(code == LV_EVENT_READY)
+    {
+        // printf("LV_EVENT_READY\n");
+        if(ui_if_epd_get_LORA() == true) 
+        {
+            const char *str = lv_textarea_get_text(ta);
+            int str_len = strlen(str);
+
+            send_cnt += str_len;
+            lv_label_set_text_fmt(cnt_label, "S:%d", send_cnt);
+            ui_lora_transmit(str);
+        }
+        else 
+        {
+            printf("Not found LORA\n");
+        }
+        lv_textarea_set_text(ta,"");
+        ui_if_epd_refr(EPD_REFRESH_TIME);
+    }
+}
+
+static void create2(lv_obj_t *parent) 
+{
+    /*Create a keyboard to use it with an of the text areas*/
+    keyborad = lv_keyboard_create(parent);
+
+    /*Create a text area. The keyboard will write here*/
+    textarea = lv_textarea_create(parent);
+    lv_obj_align(textarea, LV_ALIGN_TOP_MID, 0, 100);
+    lv_obj_add_event_cb(textarea, ta_event_cb, LV_EVENT_VALUE_CHANGED, keyborad);
+    lv_obj_add_event_cb(textarea, ta_event_cb, LV_EVENT_READY, keyborad);
+    lv_obj_set_size(textarea, lv_pct(98), 150);
+    lv_obj_clear_flag(textarea, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_text_letter_space(textarea, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_text_line_space(textarea, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_keyboard_set_textarea(keyborad, textarea);
+
+    scr2_cont_info = lv_obj_create(parent);
+    lv_obj_set_size(scr2_cont_info, lv_pct(98), lv_pct(84));
+    lv_obj_set_style_bg_color(scr2_cont_info, lv_color_hex(EPD_COLOR_BG), LV_PART_MAIN);
+    lv_obj_set_scrollbar_mode(scr2_cont_info, LV_SCROLLBAR_MODE_OFF);
+    lv_obj_clear_flag(scr2_cont_info, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_border_width(scr2_cont_info, 1, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(scr2_cont_info, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_left(scr2_cont_info, 50, LV_PART_MAIN);
+    lv_obj_set_flex_flow(scr2_cont_info, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_pad_row(scr2_cont_info, 10, LV_PART_MAIN);
+    lv_obj_set_style_pad_column(scr2_cont_info, 5, LV_PART_MAIN);
+    lv_obj_align(scr2_cont_info, LV_ALIGN_BOTTOM_MID, 0, -10);
+
+    for(int i = 0; i < LORA_RECV_INFO_MAX_LINE; i++) {
+        lora_lab_buf[i] = scr2_create_label(scr2_cont_info);
+        lv_label_set_text_fmt(lora_lab_buf[i], "Lora Send #%d", i);
+    }
+
+    //
+    lora_mode_sw = lv_btn_create(parent);
+    lv_obj_set_style_radius(lora_mode_sw, 5, LV_PART_MAIN);
+    lv_obj_set_style_border_width(lora_mode_sw, 2, LV_PART_MAIN);
+    lora_mode_lab = lv_label_create(lora_mode_sw);
+    lv_obj_set_style_text_font(lora_mode_lab, &Font_Mono_Bold_25, LV_PART_MAIN);
+    lv_obj_align(lora_mode_sw, LV_ALIGN_TOP_MID, 0, 22);
+    lv_obj_add_event_cb(lora_mode_sw, lora_mode_sw_event, LV_EVENT_CLICKED, NULL);
+
+    cnt_label = lv_label_create(parent);
+    lv_obj_set_style_text_font(cnt_label, &Font_Mono_Bold_25, LV_PART_MAIN);
+    lv_obj_align(cnt_label, LV_ALIGN_TOP_RIGHT, -30, 22);
+
+    // back
+    scr_back_btn_create(parent, "Lora", scr2_btn_event_cb);
+}
+
+static void entry2(void) 
+{
+    send_cnt = 0;
+    recv_cnt = 0;
+
+    lora_lab_cnt = 1;
+
+    if(lora_mode_st == LORA_MODE_SEND)
+    {
+        lv_label_set_text(lora_mode_lab, "MODE : SEND");
+        lv_label_set_text_fmt(cnt_label, "S:%d", send_cnt);
+        lv_obj_clear_flag(keyborad, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(textarea, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(scr2_cont_info, LV_OBJ_FLAG_HIDDEN);
+    }
+    else
+    {
+        lv_label_set_text(lora_mode_lab, "MODE : RECV");
+        lv_label_set_text_fmt(cnt_label, "R:%d", recv_cnt);
+        lv_obj_add_flag(keyborad, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(textarea, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(scr2_cont_info, LV_OBJ_FLAG_HIDDEN);
+    }
+
+    // if(ui_if_epd_get_LORA() == true)
+    // {
+        lora_send_timer = lv_timer_create(lora_send_timer_event, 1000, NULL);
+        if(lora_mode_st == LORA_MODE_SEND) 
+        {
+            lv_timer_pause(lora_send_timer);
+        }
+    // }
+}
+
+static void exit2(void) 
+{
+
+}
+static void destroy2(void) 
+{
+    if(lora_send_timer) {
+        lv_timer_del(lora_send_timer);
+        lora_send_timer = NULL;
+    }
+
+    for(int i = 0; i < LORA_RECV_INFO_MAX_LINE; i++) {
+        lora_lab_buf[i] = NULL;
+    }
+}
+
+#endif
+
+static scr_lifecycle_t screen2 = { 
     .create = create2,
     .entry = entry2,
     .exit  = exit2,
