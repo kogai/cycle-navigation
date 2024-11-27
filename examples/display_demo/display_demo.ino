@@ -493,6 +493,13 @@ void home_btn_event(void *user_data)
 
 void setup()
 {
+    // lora and sd use the same spi, in order to avoid mutual influence; 
+    // before powering on, all CS signals should be pulled high and in an unselected state;
+    pinMode(LORA_CS, OUTPUT);
+    digitalWrite(LORA_CS, HIGH);
+    pinMode(SD_CS, OUTPUT);
+    digitalWrite(SD_CS, HIGH);
+
     gpio_hold_dis((gpio_num_t)TOUCH_RST);
     gpio_hold_dis((gpio_num_t)LORA_RST);
     gpio_deep_sleep_hold_dis();
