@@ -25,7 +25,7 @@ LV_IMG_DECLARE(img_BMP)
 LV_IMG_DECLARE(img_battery)
 LV_IMG_DECLARE(img_shutdown)
 LV_IMG_DECLARE(img_start)
-
+LV_IMG_DECLARE(img_refresh)
 
 LV_IMG_DECLARE(ver_clock)
 LV_IMG_DECLARE(ver_lora)
@@ -35,6 +35,7 @@ LV_IMG_DECLARE(ver_test)
 LV_IMG_DECLARE(ver_wifi)
 LV_IMG_DECLARE(ver_battery)
 LV_IMG_DECLARE(ver_shutdown)
+LV_IMG_DECLARE(ver_refresh)
 
 // font
 // LV_FONT_DECLARE(Font_Mono_Bold_14);

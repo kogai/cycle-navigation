@@ -10,7 +10,6 @@
 #include <SensorPCF8563.hpp>
 #include <WiFi.h>
 #include <esp_sntp.h>
-#include "utilities.h"
 #include <RadioLib.h>
 #include <FS.h>
 #include <SPI.h>

@@ -53,7 +53,7 @@ void scr_middle_line(lv_obj_t *parent)
 }
 //************************************[ screen 0 ]****************************************** menu
 #if 1
-#define MENU_ICON_NUM  (8)
+#define MENU_ICON_NUM  (9)
 #define MENU_CONT_HIGH (LCD_VER_SIZE * 0.84)
 
 /*** UI interfavce ***/
@@ -78,6 +78,7 @@ const struct menu_icon icon_buf[MENU_ICON_NUM] = {
     {&ver_wifi,     "wifi",      270, 45},
     {&ver_battery,  "battery",   475, 375},
     {&ver_shutdown, "shutdown",  475, 210},
+    {&ver_refresh, "shutdown",   475, 375}
 };
 #else
 const struct menu_icon icon_buf[MENU_ICON_NUM] = {
@@ -89,6 +90,7 @@ const struct menu_icon icon_buf[MENU_ICON_NUM] = {
     {&img_wifi,     "wifi"},
     {&img_battery,  "battery"},
     {&img_shutdown, "shutdown"},
+    {&img_refresh, "refresh"},
 };
 #endif
 
@@ -107,6 +109,7 @@ static void menu_btn_event(lv_event_t *e)
             case 5: scr_mgr_push(SCREEN6_ID, false); ui_if_epd_refr(EPD_REFRESH_TIME); break;
             case 6: scr_mgr_push(SCREEN7_ID, false); ui_if_epd_refr(EPD_REFRESH_TIME); break;
             case 7: scr_mgr_push(SCREEN8_ID, false); ui_if_epd_refr(EPD_REFRESH_TIME); break;
+            case 8: scr_mgr_push(SCREEN9_ID, false); ui_if_epd_refr(EPD_REFRESH_TIME); break;
             default: break;
         }
     }
@@ -712,13 +715,14 @@ static void ta_event_cb(lv_event_t * e)
 
     if(code == LV_EVENT_VALUE_CHANGED)
     {
-        // printf("LV_EVENT_VALUE_CHANGED\n");
-        ui_if_epd_refr(EPD_REFRESH_TIME);
+        printf("LV_EVENT_VALUE_CHANGED\n");
+        // ui_if_epd_refr(EPD_REFRESH_TIME);
+        ui_epd_refr(EPD_REFRESH_TIME, 2, 1);
     }
 
     if(code == LV_EVENT_READY)
     {
-        // printf("LV_EVENT_READY\n");
+        printf("LV_EVENT_READY\n");
         if(ui_if_epd_get_LORA() == true) 
         {
             const char *str = lv_textarea_get_text(ta);
@@ -733,7 +737,8 @@ static void ta_event_cb(lv_event_t * e)
             printf("Not found LORA\n");
         }
         lv_textarea_set_text(ta,"");
-        ui_if_epd_refr(EPD_REFRESH_TIME);
+        // ui_if_epd_refr(EPD_REFRESH_TIME);
+        ui_epd_refr(EPD_REFRESH_TIME, 10, 2);
     }
 }
 
@@ -768,7 +773,7 @@ static void create2(lv_obj_t *parent)
 
     for(int i = 0; i < LORA_RECV_INFO_MAX_LINE; i++) {
         lora_lab_buf[i] = scr2_create_label(scr2_cont_info);
-        lv_label_set_text_fmt(lora_lab_buf[i], "Lora Send #%d", i);
+        lv_label_set_text_fmt(lora_lab_buf[i], "RECV #%d", i);
     }
 
     //
@@ -1770,19 +1775,18 @@ static void create8(lv_obj_t *parent)
     lv_img_set_src(img, &img_start);
     lv_obj_center(img);
 
+    // const char *str1 = "PWR: Press and hold to power on";
 
-    const char *str1 = "PWR: Press and hold to power on";
+    // lv_obj_t *label = lv_label_create(parent);
+    // lv_label_set_text(label, str1);
+    // lv_obj_set_style_transform_angle(label, -900, 0);
+    // lv_obj_align(label, LV_ALIGN_RIGHT_MID, 60, 80);
 
-    lv_obj_t *label = lv_label_create(parent);
-    lv_label_set_text(label, str1);
-    lv_obj_set_style_transform_angle(label, -900, 0);
-    lv_obj_align(label, LV_ALIGN_RIGHT_MID, 60, 80);
-
-    lv_coord_t w = lv_txt_get_width(str1, strlen(str1), &Font_Mono_Bold_20, 0, false);
-    lv_obj_set_style_transform_pivot_x(label, w / 2, 0);
+    // lv_coord_t w = lv_txt_get_width(str1, strlen(str1), &Font_Mono_Bold_20, 0, false);
+    // lv_obj_set_style_transform_pivot_x(label, w / 2, 0);
 
     // back
-    scr_back_btn_create(parent, "Shoutdown", scr8_btn_event_cb);
+    // scr_back_btn_create(parent, "Shoutdown", scr8_btn_event_cb);
 
     lv_timer_create(scr8_shutdown_timer_event, EPD_REFRESH_TIME+500, NULL);
 }
@@ -1801,6 +1805,48 @@ static scr_lifecycle_t screen8 = {
     .entry = entry8,
     .exit  = exit8,
     .destroy = destroy8,
+};
+#endif
+
+//************************************[ screen 8 ]****************************************** refresh
+#if 1
+
+static lv_timer_t *refresh_timer = NULL;
+static int refr_cnt = 0;
+
+static void scr9_shutdown_timer_event(lv_timer_t *t)
+{
+    ui_if_epd_refr(EPD_REFRESH_TIME);
+    Serial.printf("refresh -- %d\n", refr_cnt++);
+}
+
+static void create9(lv_obj_t *parent)
+{
+    // back
+    refresh_timer = lv_timer_create(scr9_shutdown_timer_event, 6000, NULL);
+}
+
+static void entry9(void) 
+{
+    refr_cnt = 0;
+}
+static void exit9(void) 
+{
+}
+static void destroy9(void) 
+{ 
+    if(refresh_timer)
+    {
+        lv_timer_del(refresh_timer);
+        refresh_timer = NULL;
+    }
+}
+
+static scr_lifecycle_t screen9 = {
+    .create = create9,
+    .entry = entry9,
+    .exit  = exit9,
+    .destroy = destroy9,
 };
 #endif
 //************************************[ UI ENTRY ]******************************************
@@ -1842,6 +1888,7 @@ void ui_epd47_entry(void)
     scr_mgr_register(SCREEN6_ID, &screen6); // wifi
     scr_mgr_register(SCREEN7_ID, &screen7); // battery
     scr_mgr_register(SCREEN8_ID, &screen8); // battery
+    scr_mgr_register(SCREEN9_ID, &screen9); // battery
 
     scr_mgr_switch(SCREEN0_ID, false); // set root screen
     scr_mgr_set_anim(LV_SCR_LOAD_ANIM_NONE, LV_SCR_LOAD_ANIM_NONE, LV_SCR_LOAD_ANIM_NONE);
