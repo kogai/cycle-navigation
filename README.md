@@ -6,24 +6,36 @@
 <p> 
   <a href="https://platformio.org/"> <img src="./images/PlatformIO_badge.png" height="20px"> </a>
   <a href="https://www.arduino.cc/en/software"> <img src="./images/Arduino_badge.png" height="20px"></a>
-  <a href=""> <img src="https://img.shields.io/badge/Liiygo-T_Embed_PN532-blue" height="20px"></a>
+  <a href="https://lilygo.cc/products/t5-e-paper-s3-pro"> <img src="https://img.shields.io/badge/Liiygo-T5S3_E_Paper_S3_PRO-blue" height="20px"></a>
   <a href=""> <img src="https://img.shields.io/badge/language-c++-brightgreen" height="20px"></a>
 </p>
 
-* [切换到中文版](./README_CN.md)
+<!-- * [切换到中文版](./README_CN.md) -->
 
 
 ## :one:Product 🎁
-| Version |    v1.0 24-08-10    |
+| Version |    v1.0 24-08-21    |
 |:-------:|:-------------------:|
 |  module   |  ESP32-S3-WROOM-1   |
 |  Flash  |        16MB         |
 |  PSRAM  |         8MB         |
 |  screen   | 960x540 16 Gray ink screen  |
 
-
-
 ## :two:Quick Start 🎁
+
+LORA and SD use the same spi, in order to avoid mutual influence; before powering on, all CS signals should be pulled high and in an unselected state;
+
+~~~arduino
+void setup()
+{
+    pinMode(LORA_CS, OUTPUT);
+    digitalWrite(LORA_CS, HIGH);
+    pinMode(SD_CS, OUTPUT);
+    digitalWrite(SD_CS, HIGH);
+
+    ...
+}
+~~~
 
 After power-on, click to enter the WIFI interface, configure the network, you can use;
 
