@@ -78,7 +78,7 @@ const struct menu_icon icon_buf[MENU_ICON_NUM] = {
     {&ver_wifi,     "wifi",      270, 45},
     {&ver_battery,  "battery",   475, 375},
     {&ver_shutdown, "shutdown",  475, 210},
-    {&ver_refresh, "shutdown",   475, 375}
+    {&ver_refresh,  "refresh",   475, 45}
 };
 #else
 const struct menu_icon icon_buf[MENU_ICON_NUM] = {
@@ -1157,6 +1157,15 @@ static void create4(lv_obj_t *parent) {
     lv_obj_add_event_cb(ui_Slider1, ui_event_Slider1, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Slider2, ui_event_Slider2, LV_EVENT_ALL, NULL);
     lv_obj_add_event_cb(ui_Slider3, ui_event_Slider3, LV_EVENT_ALL, NULL);
+
+    lv_obj_t *info = lv_label_create(parent);
+    lv_obj_set_width(info, LCD_HOR_SIZE * 0.9);
+    // lv_obj_set_style_text_color(info, lv_color_hex(EMBED_PN532_COLOR_TEXT), LV_PART_MAIN);
+    lv_obj_set_style_text_font(info, &Font_Mono_Bold_30, LV_PART_MAIN);
+    lv_label_set_long_mode(info, LV_LABEL_LONG_WRAP);
+    lv_label_set_text_fmt(info, "%s", ui_port_set_get_version());
+    lv_obj_align(info, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_set_style_text_align(info, LV_TEXT_ALIGN_CENTER, 0);
 
     // back
     scr_back_btn_create(parent, "Setting", scr4_btn_event_cb);

@@ -2,6 +2,7 @@
 #include "display_demo.h"
 #include "Arduino.h"
 
+#define T5_EPER_S3_SF_VER "v1.0 24.12.03"
 
 //************************************[ Other fun ]******************************************
 void ui_if_epd_refr(uint16_t time) 
@@ -113,6 +114,11 @@ void ui_port_set_refr_times(uint16_t times)
 {
     refr_times = times;
     eeprom_wr(UI_REFR_TIMES_EEPROM_ADDR, (uint8_t)times);
+}
+
+const char *ui_port_set_get_version(void)
+{
+    return T5_EPER_S3_SF_VER;
 }
 
 uint16_t ui_port_get_light(void)

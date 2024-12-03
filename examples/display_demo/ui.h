@@ -66,6 +66,7 @@ void ui_if_epd_read_from_SD(void);
 void ui_if_epd_set_light(uint8_t light);
 void ui_port_set_refr_cycle(uint16_t cycle);
 void ui_port_set_refr_times(uint16_t times);
+const char *ui_port_set_get_version(void);
 uint16_t ui_port_get_light(void);
 uint16_t ui_port_get_refr_cycle(void);
 uint16_t ui_port_get_refr_times(void);
