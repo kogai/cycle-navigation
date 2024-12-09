@@ -3,6 +3,8 @@
 
 <h1 align = "center">🏆T-EPD47-S3🏆</h1>
 
+![Build Status](https://github.com/Xinyuan-LilyGO/T5S3-4.7-e-paper-PRO/actions/workflows/platformio.yml/badge.svg?event=push)
+
 <p> 
   <a href="https://platformio.org/"> <img src="./images/PlatformIO_badge.png" height="20px"> </a>
   <a href="https://www.arduino.cc/en/software"> <img src="./images/Arduino_badge.png" height="20px"></a>
@@ -12,14 +14,19 @@
 
 <!-- * [切换到中文版](./README_CN.md) -->
 
-
 ## :one:Product 🎁
-| Version |    v1.0 24-08-21    |
-|:-------:|:-------------------:|
-|  module   |  ESP32-S3-WROOM-1   |
-|  Flash  |        16MB         |
-|  PSRAM  |         8MB         |
-|  screen   | 960x540 16 Gray ink screen  |
+
+|     Product      | [T5 E-Paper S3 Pro](https://lilygo.cc/products/t5-e-paper-s3-pro) |
+| :--------------: | :---------------------------------------------------------------: |
+|       MCU        |                         ESP32-S3-WROOM-1                          |
+|  Flash / PSRAM   |                             16M / 8M                              |
+|       Lora       |                              SX1262                               |
+|      Touch       |                               GT911                               |
+|    Driver IC     |             ED047TC1 (4.7 inches, 960x540 , 16 gray)              |
+| Battery Capacity |                              1500mAh                              |
+|   Battery Chip   |                         BQ25896, BQ27220                          |
+|       RTC        |                             PCF85063                              |
+
 
 ## :two:Quick Start 🎁
 
