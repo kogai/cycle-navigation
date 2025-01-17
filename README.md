@@ -1,7 +1,7 @@
 
 
 
-<h1 align = "center">🏆T-EPD47-S3🏆</h1>
+<h1 align = "center">🏆T5_E_Paper_S3_Pro🏆</h1>
 
 ![Build Status](https://github.com/Xinyuan-LilyGO/T5S3-4.7-e-paper-PRO/actions/workflows/platformio.yml/badge.svg?event=push)
 
@@ -21,12 +21,11 @@
 |       MCU        |                         ESP32-S3-WROOM-1                          |
 |  Flash / PSRAM   |                             16M / 8M                              |
 |       Lora       |                              SX1262                               |
-|      Touch       |                               GT911                               |
+|      Touch       |                           GT911 (0x5D)                            |
 |    Driver IC     |             ED047TC1 (4.7 inches, 960x540 , 16 gray)              |
 | Battery Capacity |                              1500mAh                              |
-|   Battery Chip   |                         BQ25896, BQ27220                          |
-|       RTC        |                             PCF85063                              |
-
+|   Battery Chip   |                  BQ25896 (0x6B), BQ27220 (0x55)                   |
+|       RTC        |                          PCF85063 (0x51)                          |
 
 ## :two:Quick Start 🎁
 
