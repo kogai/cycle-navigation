@@ -25,17 +25,6 @@
 #define GPIO_CS   (15)
 
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
-
-
-#define BUTTON_1   (48)
-
-#define BATT_PIN   (4)
-
-#define GPIO_MISO  (45)
-#define GPIO_MOSI  (10)
-#define GPIO_SCLK  (48)
-#define GPIO_CS    (39)
-
 //////////
 #define BOARD_SPI_MISO    (8)
 #define BOARD_SPI_MOSI    (17)
@@ -72,6 +61,5 @@
 
 #define BOOT_BTN (0)
 #define KEY_BTN  (48)
-
 
 #endif
