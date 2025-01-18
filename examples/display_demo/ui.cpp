@@ -659,13 +659,13 @@ static void lora_send_timer_event(lv_timer_t *t)
     if(lora_recv_success) {
         lora_recv_success = false;
 
-        recv_cnt += strlen(str.c_str());
+        recv_cnt += strlen(lora_recv_data.c_str());
 
         lv_label_set_text_fmt(cnt_label, "R:%d", recv_cnt);
 
         str += lora_recv_data;
 
-        lv_label_set_text_fmt(lora_lab_buf[0], "RECV: %ddm", lora_recv_rssi);
+        lv_label_set_text_fmt(lora_lab_buf[0], "RECV: %ddBm", lora_recv_rssi);
 
         if(lora_lab_buf[lora_lab_cnt] == NULL) {
             lora_lab_buf[lora_lab_cnt] = scr2_create_label(scr2_cont_info);
@@ -692,6 +692,8 @@ static void lora_mode_sw_event(lv_event_t * e)
         lv_obj_clear_flag(scr2_cont_info, LV_OBJ_FLAG_HIDDEN);
         lv_timer_resume(lora_send_timer);
         lora_lab_cnt = 1;
+
+        ui_if_epd_set_LORA_mode(LORA_MODE_RECV);
     } 
     else if(lora_mode_st == LORA_MODE_RECV) 
     {
@@ -700,6 +702,8 @@ static void lora_mode_sw_event(lv_event_t * e)
         lv_obj_clear_flag(textarea, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(scr2_cont_info, LV_OBJ_FLAG_HIDDEN);
         lv_timer_pause(lora_send_timer);
+
+        ui_if_epd_set_LORA_mode(LORA_MODE_SEND);
     }
 
     lv_label_set_text_fmt(lora_mode_lab, "MODE : %s", (lora_mode_st == LORA_MODE_SEND)? "SEND" : "RECV");
@@ -773,8 +777,9 @@ static void create2(lv_obj_t *parent)
 
     for(int i = 0; i < LORA_RECV_INFO_MAX_LINE; i++) {
         lora_lab_buf[i] = scr2_create_label(scr2_cont_info);
-        lv_label_set_text_fmt(lora_lab_buf[i], "RECV #%d", i);
+        lv_label_set_text(lora_lab_buf[i], " ");
     }
+    lv_label_set_text(lora_lab_buf[0], "RECV : dBm");
 
     //
     lora_mode_sw = lv_btn_create(parent);
@@ -1816,7 +1821,6 @@ static scr_lifecycle_t screen8 = {
     .destroy = destroy8,
 };
 #endif
-
 //************************************[ screen 8 ]****************************************** refresh
 #if 1
 
