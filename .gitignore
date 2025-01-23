@@ -3,7 +3,9 @@
 .vscode/c_cpp_properties.json
 .vscode/launch.json
 .vscode/ipch
-script
-hardware/T-EPD47-S V1.0 24-04-20.pdf
-hardware/T-EPD47-S V1.0 24-05-21.pdf
-.vscode
+.vscode/
+
+*build
+*.lock
+script/
+docs/image_source/

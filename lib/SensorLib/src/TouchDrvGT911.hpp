@@ -34,12 +34,21 @@
 #include "SensorCommon.tpp"
 
 
+#if defined(ARDUINO_ARCH_NRF52)
+// NRF52840 I2C BUFFER : 64 Bytes ,
+#warning "NRF Platform I2C Buffer expansion is not implemented , GT911 requires at least 188 bytes to read all configurations"
+#endif
+
 typedef struct GT911_Struct {
     uint8_t trackID;
     int16_t x;
     int16_t y;
     int16_t size;
 } GT911Point_t;
+
+
+#define LOW_LEVEL_QUERY         0x03
+#define HIGH_LEVEL_QUERY        0x04
 
 class TouchDrvGT911 :
     public TouchDrvInterface,
@@ -129,8 +138,14 @@ public:
         if (__irq != SENSOR_PIN_NONE) {
             this->setGpioMode(__irq, INPUT);
         }
+        /*
+        * If you perform a software reset on a board without a reset pin connected,
+        * subsequent interrupt settings or re-writing of configurations will be invalid.
+        * For example, when debugging a LilyGo T-Deck, resetting the interrupt mode will
+        * be invalid after a software reset.
+        * */
         // writeRegister(GT911_COMMAND, 0x02);
-        writeCommand(0x02);
+        // writeCommand(0x02);
     }
 
     void sleep()
@@ -160,6 +175,7 @@ public:
             this->setGpioMode(__irq, OUTPUT);
             this->setGpioLevel(__irq, HIGH);
             delay(8);
+            this->setGpioMode(__irq, INPUT);
         } else {
             reset();
         }
@@ -247,26 +263,56 @@ public:
                 return this->getGpioLevel(__irq) == LOW;
             } else if (__irq_mode == RISING ) {
                 return this->getGpioLevel(__irq) == HIGH;
+            } else if (__irq_mode == LOW_LEVEL_QUERY) {
+                return this->getGpioLevel(__irq) == LOW;
+            }  else if (__irq_mode == HIGH_LEVEL_QUERY) {
+                return this->getGpioLevel(__irq) == HIGH;
             }
-        } else {
-            return getPoint();
         }
-        return false;
+        return getPoint();
     }
 
-    //In the tested GT911 only the falling edge is valid to use, the rest are incorrect
     bool setInterruptMode(uint8_t mode)
     {
         // GT911_MODULE_SWITCH_1 0x804D
         uint8_t val = readGT911(GT911_MODULE_SWITCH_1);
         val &= 0XFC;
         if (mode == FALLING) {
-            val |= 0x03;
+            val |= 0x01;
         } else if (mode == RISING ) {
+            val |= 0x00;
+        } else if (mode == LOW_LEVEL_QUERY ) {
             val |= 0x02;
+        } else if (mode == HIGH_LEVEL_QUERY ) {
+            val |= 0x03;
         }
         __irq_mode = mode;
-        return writeGT911(GT911_MODULE_SWITCH_1, val) != DEV_WIRE_ERR;
+        writeGT911(GT911_MODULE_SWITCH_1, val);
+        return reloadConfig();
+    }
+
+    /**
+     * @retval
+     *  * 0x0: Rising edge trigger
+     *  * 0x1: Falling edge trigger
+     *  * 0x2: Low level query
+     *  * 0x3: High level query
+     */
+    uint8_t getInterruptMode()
+    {
+        uint8_t val = readGT911(GT911_MODULE_SWITCH_1);
+        // return val & 0x03;
+        val &= 0x03;
+        if (val == 0x00) {
+            __irq_mode = RISING;
+        } else if (val == 0x01) {
+            __irq_mode = FALLING;
+        } else if (val == 0x02) {
+            __irq_mode = LOW_LEVEL_QUERY;
+        } else if (val == 0x03) {
+            __irq_mode = HIGH_LEVEL_QUERY;
+        }
+        return val;
     }
 
 
@@ -299,6 +345,12 @@ public:
         return fw_ver[0] | (fw_ver[1] << 8);
     }
 
+    uint8_t getConfigVersion()
+    {
+        return readGT911(GT911_CONFIG_VERSION);
+    }
+
+
     bool getResolution(int16_t *x, int16_t *y)
     {
         uint8_t x_resolution[2] = {0}, y_resolution[2] = {0};
@@ -314,6 +366,27 @@ public:
         *y = y_resolution[0] | (y_resolution[1] << 8);
         return true;
     }
+
+    //Range : 5 ~ 15 ms
+    void updateRefreshRate(uint8_t rate_ms)
+    {
+        if ((rate_ms - 5) < 5) {
+            rate_ms = 5;
+        }
+        if (rate_ms > 15) {
+            rate_ms = 15;
+        }
+        rate_ms -= 5;
+        writeGT911(GT911_REFRESH_RATE, rate_ms);
+        reloadConfig();
+    }
+
+    uint8_t getRefreshRate()
+    {
+        uint8_t rate_ms  = readGT911(GT911_REFRESH_RATE);
+        return rate_ms + GT911_BASE_REF_RATE ;
+    }
+
 
     int getVendorID()
     {
@@ -339,6 +412,90 @@ public:
     {
         __homeButtonCb = cb;
         __userData = user_data;
+    }
+
+    bool writeConfig(const uint8_t *config_buffer, size_t buffer_size)
+    {
+        setRegAddressLength(2);
+        int err =  writeRegister(GT911_CONFIG_VERSION, (uint8_t *)config_buffer, buffer_size);
+        setRegAddressLength(1);
+        return err == DEV_WIRE_NONE;
+    }
+
+    uint8_t *loadConfig(size_t *output_size, bool print_out = false)
+    {
+        *output_size = 0;
+        uint8_t   *buffer = (uint8_t * )malloc(GT911_REG_LENGTH * sizeof(uint8_t));
+        if (!buffer)return NULL;
+        uint8_t write_buffer[2] = {highByte(GT911_CONFIG_VERSION), lowByte(GT911_CONFIG_VERSION)};
+        if (writeThenRead(write_buffer, SENSORLIB_COUNT(write_buffer), buffer, GT911_REG_LENGTH) == DEV_WIRE_ERR) {
+            free(buffer);
+            return NULL;
+        }
+        if (print_out) {
+            printf("const unsigned char config[186] = {");
+            for (int i = 0; i < GT911_REG_LENGTH; ++i) {
+                if ( (i % 8) == 0) {
+                    printf("\n");
+                }
+                printf("0x%02X", buffer[i]);
+                if ((i + 1) < GT911_REG_LENGTH) {
+                    printf(",");
+                }
+            }
+            printf("};\n");
+        }
+        *output_size = GT911_REG_LENGTH;
+        return buffer;
+    }
+
+    bool reloadConfig()
+    {
+        uint8_t buffer[GT911_REG_LENGTH] = {highByte(GT911_CONFIG_VERSION), lowByte(GT911_CONFIG_VERSION)};
+        if (writeThenRead(buffer, 2, buffer, GT911_REG_LENGTH - 2) == DEV_WIRE_ERR) {
+            return false;
+        }
+
+        uint8_t check_sum = 0;
+        for (int i = 0; i < (GT911_REG_LENGTH - 2 ); i++) {
+            check_sum += buffer[i];
+        }
+        check_sum =  (~check_sum) + 1;
+        log_d("reloadConfig check_sum : 0x%X\n", check_sum);
+        writeGT911(GT911_CONFIG_CHKSUM, check_sum);
+        writeGT911(GT911_CONFIG_FRESH, 0x01);
+        return true;
+    }
+
+    void dumpRegister()
+    {
+        size_t output_size = 0;
+        uint8_t *buffer = loadConfig(&output_size, true);
+        if (output_size == 0) {
+            return;
+        }
+
+        if (buffer == NULL)return;
+        printf("----------Dump register------------\n");
+        for (size_t  i = 0; i < output_size; ++i) {
+            printf("[%d]  REG: 0x%X : 0x%02X\n", i, GT911_CONFIG_VERSION + i, buffer[i]);
+        }
+        free(buffer);
+    }
+
+    // Range : 1~5
+    void setMaxTouchPoint(uint8_t num)
+    {
+        if (num < 1)num = 1;
+        if (num > 5) num = 5;
+        writeGT911(GT911_TOUCH_NUMBER, num);
+        reloadConfig();
+    }
+
+    uint8_t getMaxTouchPoint()
+    {
+        uint8_t num = readGT911(GT911_TOUCH_NUMBER);
+        return num & 0x0F;
     }
 
 private:
@@ -371,15 +528,43 @@ private:
         writeGT911(GT911_POINT_INFO, 0x00);
     }
 
+    bool probeAddress()
+    {
+        const uint8_t device_address[2]  = {GT911_SLAVE_ADDRESS_L, GT911_SLAVE_ADDRESS_H};
+        for (size_t i = 0; i < SENSORLIB_COUNT(device_address); ++i) {
+            __addr = device_address[i];
+            for (int retry = 0; retry < 3; ++retry) {
+                if (getChipID() == GT911_DEV_ID) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     bool initImpl()
     {
         int16_t x = 0, y = 0;
 
-        if (__addr == GT911_SLAVE_ADDRESS_H  &&
-                __rst != SENSOR_PIN_NONE &&
-                __irq != SENSOR_PIN_NONE) {
+        if (__rst == SENSOR_PIN_NONE) {
+            // Automatically determine the current device
+            // address when using the reset pin without connection
+            if (!probeAddress()) {
+                return false;
+            }
+            log_i("Probe address is : 0x%X", __addr);
 
-            log_i("GT911 using 0x28 address!\n");
+            // Reset Config
+            reset();
+
+            this->setGpioMode(__irq, INPUT);
+
+        } else if (__addr == GT911_SLAVE_ADDRESS_H  &&
+                   __rst != SENSOR_PIN_NONE &&
+                   __irq != SENSOR_PIN_NONE) {
+
+            log_i("GT911 using 0x28 address!");
 
             this->setGpioMode(__rst, OUTPUT);
             this->setGpioMode(__irq, OUTPUT);
@@ -395,7 +580,7 @@ private:
                    __rst != SENSOR_PIN_NONE &&
                    __irq != SENSOR_PIN_NONE) {
 
-            log_i("GT911 using 0xBA address!\n");
+            log_i("GT911 using 0xBA address!");
 
             this->setGpioMode(__rst, OUTPUT);
             this->setGpioMode(__irq, OUTPUT);
@@ -407,24 +592,50 @@ private:
             delay(18);
             this->setGpioMode(__irq, INPUT);
 
-        } else {
-            reset();
         }
 
         // For variants where the GPIO is controlled by I2C, a delay is required here
         delay(20);
 
         __chipID = getChipID();
-        log_i("Product id:%ld\n", __chipID);
+        log_i("Product id:%ld", __chipID);
 
-        if (__chipID != 911) {
-            log_i("Not find device GT911\n");
+        if (__chipID != GT911_DEV_ID) {
+            log_i("Not find device GT911");
             return false;
         }
-        log_i("Firmware version: 0x%x\n", getFwVersion());
+        log_i("Firmware version: 0x%x", getFwVersion());
         getResolution(&x, &y);
-        log_i("Resolution : X = %d Y = %d\n", x, y);
-        log_i("Vendor id:%d\n", getVendorID());
+        log_i("Resolution : X = %d Y = %d", x, y);
+        log_i("Vendor id:%d", getVendorID());
+        log_i("Refresh Rate:%d ms", getRefreshRate());
+        log_i("MaxTouchPoint:%d", getMaxTouchPoint());
+
+        /*
+        * For the ESP32 platform, the default buffer is 128.
+        * Need to re-apply for a larger buffer to fully read the configuration table.
+        * */
+        if (!this->reallocBuffer(GT911_REG_LENGTH + 2 )) {
+            log_e("realloc i2c buffer failed !");
+            return false;
+        }
+
+        // Get the default interrupt trigger mode of the current screen
+        getInterruptMode();
+
+        if ( __irq_mode == RISING) {
+            log_i("Interrupt Mode:  RISING");
+        } else if (__irq_mode == FALLING) {
+            log_i("Interrupt Mode:  FALLING");
+        } else if (__irq_mode == LOW_LEVEL_QUERY) {
+            log_i("Interrupt Mode:  LOW_LEVEL_QUERY");
+        } else if (__irq_mode == HIGH_LEVEL_QUERY) {
+            log_i("Interrupt Mode:  HIGH_LEVEL_QUERY");
+        } else {
+            log_e("UNKOWN");
+        }
+
+
         return true;
     }
 
