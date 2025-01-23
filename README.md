@@ -16,10 +16,10 @@
 
 ### 1、Version
 
-|   ID    |  Hardware   |  Software   | Repository | Remark |
-| :-----: | :---------: | :---------: | :--------: | :----: |
-| H752-01 | v1.0-241224 | v1.2_250118 |            | latest |
-|  H752   | v1.0-240810 | v1.0-241203 |            |   -    |
+|                                       ID                                       |  Hardware   |  Software   | Remark |
+| :----------------------------------------------------------------------------: | :---------: | :---------: | :----: |
+| [H752-01](https://github.com/Xinyuan-LilyGO/T5S3-4.7-e-paper-PRO/tree/H752-01) | v1.0-241224 | v1.2_250118 | latest |
+|    [H752](https://github.com/Xinyuan-LilyGO/T5S3-4.7-e-paper-PRO/tree/H752)    | v1.0-240810 | v1.0-241203 |   -    |
 
 H752-01 new version :
 - Adds the ink screen power management chip TPS65185;
