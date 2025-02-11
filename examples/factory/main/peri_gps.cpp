@@ -29,13 +29,13 @@ bool gps_init(void)
         SerialGPS.begin(38400, SERIAL_8N1, BOARD_GPS_RXD, BOARD_GPS_TXD);
         result = GPS_Recovery();
         if (!result) {
-            SerialGPS.updateBaudRate(9600);
-            result = GPS_Recovery();
-            if (!result) {
+            // SerialGPS.updateBaudRate(9600);
+            // result = GPS_Recovery();
+            // if (!result) {
                 Serial.println("GPS Connect failed~!");
                 result = false;
-            }
-            SerialGPS.updateBaudRate(38400);
+            // }
+            // SerialGPS.updateBaudRate(38400);
         }
     }
     if(result) {

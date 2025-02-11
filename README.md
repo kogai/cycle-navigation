@@ -47,8 +47,6 @@ H752-01 new version :
 | E-link Power Driver |                          TPS65185 (0x68)                          |
 |      IO Extend      |                         PCA9535PW (0x20)                          |
 
-
-
 ## :two: Module 🎁
 
 Datasheets on the chip are available in [./hardware](./hardware/) directory.
@@ -199,6 +197,5 @@ Sleep power consumption.
 For more information, see the `./hardware` directory.
 
 Schematic : [T5_E-Paper-S3-Pro](./hardware/T5%20E-paper%20S3%20Pro%20V1.0%2024-12-24.pdf)
-
 
 3D Files : [3D Files](./DXF/)

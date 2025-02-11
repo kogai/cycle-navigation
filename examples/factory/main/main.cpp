@@ -269,10 +269,10 @@ static bool touch_gt911_init(void)
     touch.setPins(BOARD_TOUCH_RST, BOARD_TOUCH_INT);
     if (!touch.begin(Wire, GT911_SLAVE_ADDRESS_L, BOARD_SDA, BOARD_SCL))
     {
-        while (1) {
+        // while (1) {
             Serial.println("Failed to find GT911 - check your wiring!");
-            delay(1000);
-        }
+        //     delay(1000);
+        // }
     }
     Serial.println("Init GT911 Sensor success!");
 
