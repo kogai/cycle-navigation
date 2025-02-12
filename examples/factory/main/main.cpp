@@ -163,12 +163,21 @@ void disp_refresh_screen(void)
 static void disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *color_p)
 {
     if(disp_flush_enabled) {
-        uint16_t w = lv_area_get_width(area);
+        uint16_t w = lv_area_get_width(area) / 2;
         uint16_t h = lv_area_get_height(area);
         lv_color32_t *t32 = (lv_color32_t *)color_p;
 
-        for(int i = 0; i < (w * h) / 2; i++) {
-
+#if 0   // Mirror screen or not
+        int w2 = w * 2;
+        for(int i = 0; i < h ; i++) {
+            for(int j = 0; j < w2 / 2; j++) {
+                lv_color_t t = *(color_p + (i * w2) + j);
+                *(color_p + (i * w2) + j) = *(color_p + (i * w2) + (w2 - j - 1));
+                *(color_p + (i * w2) + (w2 - j - 1)) = t;
+            }
+        }
+#endif
+        for(int i = 0; i < (w * h) ; i++) {
             lv_color8_t ret;
             LV_COLOR_SET_R8(ret, LV_COLOR_GET_R(*t32) >> 5); /*8 - 3  = 5*/
             LV_COLOR_SET_G8(ret, LV_COLOR_GET_G(*t32) >> 5); /*8 - 3  = 5*/
@@ -241,7 +250,7 @@ static void lv_port_disp_init(void)
 
     lv_color_t *lv_disp_buf_1 = (lv_color_t *)ps_calloc(sizeof(lv_color_t), DISP_BUF_SIZE);
     lv_color_t *lv_disp_buf_2 = (lv_color_t *)ps_calloc(sizeof(lv_color_t), DISP_BUF_SIZE);
-    decodebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), DISP_BUF_SIZE);
+    decodebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), DISP_BUF_SIZE / 2);
     lv_disp_draw_buf_init(&draw_buf, lv_disp_buf_1, lv_disp_buf_2, DISP_BUF_SIZE);
 
     static lv_disp_drv_t disp_drv;
