@@ -20,6 +20,10 @@ void ui_nvs_set_defaulat_param(void)
     epd_vcom_default = nvs_param_get_u16(NVS_ID_EPD_VCOM);
     refresh_mode = nvs_param_get_u8(NVS_ID_REFRESH_MODE);
 
+    printf("ui_setting_backlight = %d\n", ui_setting_backlight );
+    printf("epd_vcom_default = %d\n", epd_vcom_default );
+    printf("refresh_mode = %d\n", refresh_mode );
+
     ui_setting_set_backlight(ui_setting_backlight);
 }
 
@@ -496,6 +500,11 @@ void ui_gps_get_speed(double *speed)
 }
 
 //************************************[ screen 8 ]****************************************** shutdown
+void ui_shutdown_vcom(int v)
+{
+    epd_set_vcom(v);
+}
+
 void ui_shutdown(void)
 {
     PPM.shutdown();

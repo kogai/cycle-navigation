@@ -111,6 +111,7 @@ void ui_gps_get_time(uint8_t *hour, uint8_t *minute, uint8_t *second);
 void ui_gps_get_satellites(uint32_t *vsat);
 void ui_gps_get_speed(double *speed);
 // shutdown
+void ui_shutdown_vcom(int v);
 void ui_shutdown(void);
 
 void ui_sleep(void);

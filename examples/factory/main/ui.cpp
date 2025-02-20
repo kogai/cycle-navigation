@@ -2497,7 +2497,7 @@ static void create8(lv_obj_t *parent)
     } 
     else 
     {
-        ui_setting_set_vcom(5000);
+        ui_shutdown_vcom(5000);
 
         lv_obj_t * img = lv_img_create(parent);
         lv_img_set_src(img, &img_start);
