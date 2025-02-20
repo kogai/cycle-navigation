@@ -6,9 +6,11 @@
 #define UI_REFRESH_MODE_NORMAL 1
 #define UI_REFRESH_MODE_NEAT   2
 
+void ui_nvs_set_defaulat_param(void);
 void ui_indev_touch_en(void);
 void ui_indev_touch_dis(void);
 void ui_refresh_set_mode(int mode);
+int ui_refresh_get_mode();
 void ui_full_refresh(void);
 void ui_full_clean(void);
 void ui_epd_clean(void);
@@ -43,6 +45,7 @@ void ui_sd_get_capacity(uint64_t *total, uint64_t *used);
 int ui_setting_get_vcom(void);
 void ui_setting_set_vcom(int v);
 void ui_setting_set_backlight(int bl);
+void ui_setting_set_backlight_level(int level);
 const char *ui_setting_get_backlight(int *ret_bl);
 void ui_setting_set_refresh_speed(int bl);
 const char *ui_setting_get_refresh_speed(int *ret_bl);

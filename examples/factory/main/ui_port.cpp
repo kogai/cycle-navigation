@@ -5,11 +5,23 @@
 #include "peripheral.h"
 #include "epdiy.h"
 #include "ui_port.h"
+#include "nvs_param.h"
 
 int ui_setting_backlight = 3;  // 0 - 3
 int epd_vcom_default = 1560;
+int refresh_mode = UI_REFRESH_MODE_FAST;
 
 //************************************[ Other fun ]******************************************
+
+void ui_nvs_set_defaulat_param(void)
+{
+    nsv_param_init();
+    ui_setting_backlight = nvs_param_get_u8(NVS_ID_BACKLIGHT);
+    epd_vcom_default = nvs_param_get_u16(NVS_ID_EPD_VCOM);
+    refresh_mode = nvs_param_get_u8(NVS_ID_REFRESH_MODE);
+
+    ui_setting_set_backlight(ui_setting_backlight);
+}
 
 void ui_indev_touch_en(void)
 {
@@ -25,7 +37,12 @@ void ui_refresh_set_mode(int mode)
 {
     mode = mode < UI_REFRESH_MODE_FAST ? UI_REFRESH_MODE_FAST : mode;
     mode = mode > UI_REFRESH_MODE_NEAT ? UI_REFRESH_MODE_NEAT : mode;
-    disp_refresh_set_mode(mode);
+    refresh_mode = mode;
+}
+
+int ui_refresh_get_mode()
+{
+    return refresh_mode;
 }
 
 void ui_full_refresh(void)
@@ -192,13 +209,11 @@ void ui_setting_set_vcom(int v)
     v = v < 200 ? 200 : v;
     epd_vcom_default = v;
     epd_set_vcom(v); // TPS651851 VCOM output range 0-5.1v  step:10mV
+    nvs_param_set_u16(NVS_ID_EPD_VCOM, epd_vcom_default);
 }
 
 void ui_setting_set_backlight(int bl)
 {
-    bl++;
-    bl &= 0x03;
-
     switch (bl)
     {
         case 0: analogWrite(BOARD_BL_EN, 0); break;
@@ -209,6 +224,14 @@ void ui_setting_set_backlight(int bl)
             break;
     }
     ui_setting_backlight = bl;
+}
+
+void ui_setting_set_backlight_level(int level)
+{
+    level++;    
+    level &= 0x03;
+    ui_setting_set_backlight(level);
+    nvs_param_set_u8(NVS_ID_BACKLIGHT, ui_setting_backlight);
 }
 
 const char *ui_setting_get_backlight(int *ret_bl)
@@ -233,12 +256,13 @@ void ui_setting_set_refresh_speed(int bl)
 {
     switch (refresh_mode)
     {
-        case REFRESH_MODE_FAST:   refresh_mode = REFRESH_MODE_NORMAL;   break;
-        case REFRESH_MODE_NORMAL: refresh_mode = REFRESH_MODE_NEAT;     break;
-        case REFRESH_MODE_NEAT:   refresh_mode = REFRESH_MODE_FAST;     break;
+        case UI_REFRESH_MODE_FAST:   refresh_mode = UI_REFRESH_MODE_NORMAL;   break;
+        case UI_REFRESH_MODE_NORMAL: refresh_mode = UI_REFRESH_MODE_NEAT;     break;
+        case UI_REFRESH_MODE_NEAT:   refresh_mode = UI_REFRESH_MODE_FAST;     break;
         default:
             break;
     }
+    nvs_param_set_u8(NVS_ID_REFRESH_MODE, refresh_mode);
 }
 
 const char *ui_setting_get_refresh_speed(int *ret_bl)
@@ -246,9 +270,9 @@ const char *ui_setting_get_refresh_speed(int *ret_bl)
     const char *ret = NULL;
     switch (refresh_mode)
     {  
-        case REFRESH_MODE_FAST:   ret = "Fast";   break;
-        case REFRESH_MODE_NORMAL: ret = "Normal"; break;
-        case REFRESH_MODE_NEAT:   ret = "Neat";   break;
+        case UI_REFRESH_MODE_FAST:   ret = "Fast";   break;
+        case UI_REFRESH_MODE_NORMAL: ret = "Normal"; break;
+        case UI_REFRESH_MODE_NEAT:   ret = "Neat";   break;
         default:
             break;
     }

@@ -76,15 +76,9 @@ extern BQ27220 bq27220;
 extern XPowersPPM PPM;
 
 // display refresh mode
-#define REFRESH_MODE_FAST   0
-#define REFRESH_MODE_NORMAL 1
-#define REFRESH_MODE_NEAT   2
-extern int refresh_mode;
-
 void disp_full_refresh(void);
 void disp_full_clean(void);
 void dips_clean(void);
-void disp_refresh_set_mode(int mode);
 void disp_refresh_screen(void);
 
 void indev_touch_en();

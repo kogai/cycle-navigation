@@ -46,6 +46,8 @@ const EpdDisplay_t ED133UT2 = {
 };
 
 const EpdDisplay_t ED047TC1 = {
+    // .width = 1440,
+    // .height = 720,
     .width = 960,
     .height = 540,
     .bus_width = 8,

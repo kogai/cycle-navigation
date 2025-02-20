@@ -31,6 +31,8 @@
 #include "scr_mrg.h"
 #include "firasans_12.h"
 #include "firasans_20.h"
+#include "ui_port.h"
+#include "nvs_param.h"
 
 TaskHandle_t btn_handle;
 
@@ -55,7 +57,6 @@ SensorPCF8563 rtc;
 
 // LVGL
 #define DISP_BUF_SIZE (epd_rotated_display_width() * epd_rotated_display_height())
-int refresh_mode = REFRESH_MODE_NORMAL;
 uint8_t *decodebuffer = NULL;
 volatile bool disp_flush_enabled = true;
 volatile bool indev_touch_enabled = true;
@@ -99,11 +100,6 @@ void indev_touch_en()
 void indev_touch_dis()
 {
     indev_touch_enabled = false;
-}
-
-void disp_refresh_set_mode(int mode)
-{
-    refresh_mode = mode;
 }
 
 void disp_full_refresh(void)
@@ -194,7 +190,7 @@ static void disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *c
         .height = epd_rotated_display_height(),
     };
 
-    if(refresh_mode == REFRESH_MODE_FAST) 
+    if(ui_refresh_get_mode() == UI_REFRESH_MODE_FAST) 
     {
         // disp_full_refresh();
         epd_draw_rotated_image(rener_area, decodebuffer, epd_hl_get_framebuffer(&hl));
@@ -203,7 +199,7 @@ static void disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *c
         checkError(epd_hl_update_area(&hl, MODE_DU, epd_ambient_temperature(), rener_area));
         epd_poweroff();
     } 
-    else if(refresh_mode == REFRESH_MODE_NORMAL)
+    else if(ui_refresh_get_mode() == UI_REFRESH_MODE_NORMAL)
     {
         // disp_full_refresh();
         epd_draw_rotated_image(rener_area, decodebuffer, epd_hl_get_framebuffer(&hl));
@@ -212,7 +208,7 @@ static void disp_flush(lv_disp_drv_t *disp, const lv_area_t *area, lv_color_t *c
         // checkError(epd_hl_update_area(&hl, MODE_DU, epd_ambient_temperature(), rener_area));
         epd_poweroff();
     } 
-    else if(refresh_mode == REFRESH_MODE_NEAT)
+    else if(ui_refresh_get_mode() == UI_REFRESH_MODE_NEAT)
     {
         disp_full_refresh();
         epd_draw_rotated_image(rener_area, decodebuffer, epd_hl_get_framebuffer(&hl));
@@ -334,7 +330,6 @@ static void disp_init_status(const char *name, int *x, int *y, bool init_st)
     epd_poweron();
     checkError(epd_hl_update_screen(&hl, MODE_GL16, epd_ambient_temperature()));
     epd_poweroff();
-
 }
 
 static bool screen_init(void)
@@ -343,7 +338,7 @@ static bool screen_init(void)
     // Set VCOM for boards that allow to set this in software (in mV).
     // This will print an error if unsupported. In this case,
     // set VCOM using the hardware potentiometer and delete this line.
-    epd_set_vcom(1260);
+    epd_set_vcom(ui_setting_get_vcom());
     // epd_set_vcom(ui_setting_get_vcom()); // TPS651851 VCOM output range 0-5.1v  step:10mV
 
     hl = epd_hl_init(WAVEFORM);
@@ -486,9 +481,6 @@ static bool sd_card_init(void)
 
 void idf_setup() 
 {
-    int backlight = 0;
-    
-
     gpio_hold_dis((gpio_num_t)BOARD_TOUCH_RST);
     gpio_hold_dis((gpio_num_t)BOARD_LORA_RST);
     gpio_deep_sleep_hold_dis();
@@ -513,8 +505,9 @@ void idf_setup()
     Wire.begin(BOARD_SDA, BOARD_SCL);
 
     pinMode(BOARD_BL_EN, OUTPUT);
-    ui_setting_get_backlight(&backlight);
-    ui_setting_set_backlight(backlight);
+
+    // Init system
+    ui_nvs_set_defaulat_param();
 
     peri_buf[E_PERI_BQ27220]    = bq27220_init();   // PMU --- 0x55
     
