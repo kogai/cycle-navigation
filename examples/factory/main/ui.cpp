@@ -2349,7 +2349,7 @@ static void scr3_GPS_updata(void)
 
     static int cnt = 0;
 
-    lv_label_set_text_fmt(scr3_cnt_lab, " %05d ", ++cnt);
+    lv_label_set_text_fmt(scr3_cnt_lab, " %05d ", ui_gps_get_charsProcessed());
 
     ui_gps_get_coord(&lat, &lon);
     ui_gps_get_data(&year, &month, &day);

@@ -23,21 +23,22 @@ bool gps_init(void)
 {   
     bool result = false;
     // L76K GPS USE 9600 BAUDRATE
-    // result = setupGPS();
+    result = setupGPS();
     if(!result) {
         // Set u-blox m10q gps baudrate 38400
         SerialGPS.begin(38400, SERIAL_8N1, BOARD_GPS_RXD, BOARD_GPS_TXD);
         result = GPS_Recovery();
         if (!result) {
-            // SerialGPS.updateBaudRate(9600);
-            // result = GPS_Recovery();
-            // if (!result) {
+            SerialGPS.updateBaudRate(9600);
+            result = GPS_Recovery();
+            if (!result) {
                 Serial.println("GPS Connect failed~!");
                 result = false;
-            // }
-            // SerialGPS.updateBaudRate(38400);
+            }
+            SerialGPS.updateBaudRate(38400);
         }
     }
+
     if(result) {
         Serial.println("GPS Task Create...!");
         gps_task_create();
@@ -73,6 +74,11 @@ void gps_task_create(void)
 {
     xTaskCreate(gps_task, "gps_task", 1024 * 3, NULL, GPS_PRIORITY, &gps_handle);
     vTaskSuspend(gps_handle);
+}
+
+uint32_t gps_get_charsProcessed(void)
+{
+    return gps.charsProcessed();
 }
 
 void gps_task_suspend(void)
@@ -239,13 +245,12 @@ bool setupGPS()
     // Initialize the L76K Chip, use GPS + GLONASS
     SerialGPS.write("$PCAS04,5*1C\r\n");
     delay(250);
-    SerialGPS.write("$PCAS03,1,1,1,1,1,1,1,1,1,1,,,0,0*26\r\n");
+    SerialGPS.write("$PCAS03,1,1,1,1,1,1,1,1,1,1,,,0,0*02\r\n");
     delay(250);
     // Switch to Vehicle Mode, since SoftRF enables Aviation < 2g
     SerialGPS.write("$PCAS11,3*1E\r\n");
     return result;
 }
-
 
 static int getAck(uint8_t *buffer, uint16_t size, uint8_t requestedClass, uint8_t requestedID)
 {

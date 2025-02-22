@@ -32,6 +32,7 @@ void lora_recv_resume(void);
 // gps u-blox m10q
 bool gps_init(void);
 void gps_task_create(void);
+uint32_t gps_get_charsProcessed(void);
 void gps_task_suspend(void);
 void gps_task_resume(void);
 void gps_get_coord(double *lat, double *lng);

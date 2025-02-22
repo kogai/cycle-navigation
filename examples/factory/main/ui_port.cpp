@@ -469,6 +469,11 @@ const char * ui_battert_27220_get_percent_level(void)
 }
 #endif
 //************************************[ screen 8 ]****************************************** gps
+uint32_t ui_gps_get_charsProcessed(void)
+{
+    return gps_get_charsProcessed();
+}
+
 void ui_gps_task_suspend(void)
 {
     gps_task_suspend();

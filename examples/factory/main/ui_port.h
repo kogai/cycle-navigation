@@ -103,6 +103,7 @@ uint16_t ui_battery_27220_get_health(void);
 const char * ui_battert_27220_get_percent_level(void);
 
 // gsp
+uint32_t ui_gps_get_charsProcessed(void);
 void ui_gps_task_suspend(void);
 void ui_gps_task_resume(void);
 void ui_gps_get_coord(double *lat, double *lng);

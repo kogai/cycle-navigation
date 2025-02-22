@@ -36,12 +36,12 @@ const BQ27220DMData gauge_data_memory[] = {
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1FullChargeCapacity,
         .type = BQ27220DMTypeU16,
-        .value.u16 = 950,
+        .value.u16 = 1500,
     },
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1DesignCapacity,
         .type = BQ27220DMTypeU16,
-        .value.u16 = 950,
+        .value.u16 = 1500,
     },
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1EMF,
