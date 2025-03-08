@@ -33,4 +33,8 @@ esp_err_t pca9555_set_value(i2c_port_t port, uint8_t config_value, int high_port
 esp_err_t pca9555_set_inversion(i2c_port_t port, uint8_t config_value, int high_port);
 esp_err_t pca9555_set_config(i2c_port_t port, uint8_t config_value, int high_port);
 
+uint8_t pca9555_read_write(i2c_port_t i2c_port, int high_port);
+uint8_t pca9555_read_inversion(i2c_port_t i2c_port, int high_port);
+uint8_t pca9555_read_config(i2c_port_t i2c_port, int high_port);
+
 #endif // PCA9555_H

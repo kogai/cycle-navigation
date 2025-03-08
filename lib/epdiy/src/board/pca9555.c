@@ -106,3 +106,42 @@ uint8_t pca9555_read_input(i2c_port_t i2c_port, int high_port) {
 
 	return r_data[0];
 }
+
+uint8_t pca9555_read_write(i2c_port_t i2c_port, int high_port) {
+    esp_err_t err;
+	uint8_t r_data[1];
+
+    err = i2c_master_read_slave(i2c_port, r_data, 1, REG_OUTPUT_PORT0 + high_port);
+    if (err != ESP_OK) {
+        ESP_LOGE("PCA9555", "%s failed", __func__);
+        return 0;
+    }
+
+	return r_data[0];
+}
+
+uint8_t pca9555_read_inversion(i2c_port_t i2c_port, int high_port) {
+    esp_err_t err;
+	uint8_t r_data[1];
+
+    err = i2c_master_read_slave(i2c_port, r_data, 1, REG_INVERT_PORT0 + high_port);
+    if (err != ESP_OK) {
+        ESP_LOGE("PCA9555", "%s failed", __func__);
+        return 0;
+    }
+
+	return r_data[0];
+}
+
+uint8_t pca9555_read_config(i2c_port_t i2c_port, int high_port) {
+    esp_err_t err;
+	uint8_t r_data[1];
+
+    err = i2c_master_read_slave(i2c_port, r_data, 1, REG_CONFIG_PORT0 + high_port);
+    if (err != ESP_OK) {
+        ESP_LOGE("PCA9555", "%s failed", __func__);
+        return 0;
+    }
+
+	return r_data[0];
+}

@@ -9,7 +9,7 @@
 
 int ui_setting_backlight = 3;  // 0 - 3
 int epd_vcom_default = 1560;
-int refresh_mode = UI_REFRESH_MODE_FAST;
+int refresh_mode = UI_REFRESH_MODE_NORMAL;
 
 //************************************[ Other fun ]******************************************
 

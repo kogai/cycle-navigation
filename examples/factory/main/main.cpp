@@ -34,10 +34,13 @@
 #include "ui_port.h"
 #include "nvs_param.h"
 
+char global_buf[GLOBAL_BUF_LEN];
+
 TaskHandle_t btn_handle;
 
 // peripheral
 bool peri_buf[E_PERI_MAX] = {0};
+
 
 // bq25896
 XPowersPPM PPM;
@@ -72,14 +75,14 @@ void btn_task(void *param)
         if (digitalRead(BOARD_PCA9535_INT) == LOW)
         {
             if(button_read()) {
-                Serial.printf("Button Press\n");
+                // Serial.printf("Button Press\n");
                 disp_refresh_screen();
             }
-            // else{
-            //     Serial.printf("Button Release\n");
-            // }
+            else{
+                Serial.printf("io_extend end\n");
+            }
         }
-        delay(100);
+        delay(300);
     }
 }
 
@@ -381,7 +384,7 @@ static bool screen_init(void)
     epd_hl_update_screen(&hl, MODE_GL16, epd_ambient_temperature());
     epd_poweroff();
 
-    printf("current temperature: %d\n", epd_ambient_temperature());
+    printf("current temperature: %.2f\n", epd_ambient_temperature());
 
     return true;
 }
@@ -515,7 +518,16 @@ void idf_setup()
     io_extend_lora_gps_power_on(true);
 
     int cursor_x = 100;
-    int cursor_y = epd_rotated_display_height() / 2 - 100;
+    int cursor_y = epd_rotated_display_height() / 2 - 100 - 50;
+    uint8_t io_val0 = pca9555_read_input(BOARD_I2C_PORT, 0);
+    uint8_t io_val1 = pca9555_read_input(BOARD_I2C_PORT, 1);
+    bool io_ret = false;
+    lv_snprintf(global_buf, GLOBAL_BUF_LEN, "io_extend: 0x%02x, 0x%02x", io_val0, io_val1);
+    if(((io_val0 & 0x01) && (io_val1 & 0x04))) io_ret = true;
+    disp_init_status(global_buf, &cursor_x, &cursor_y, io_ret);
+
+    cursor_x = 100;
+    cursor_y = epd_rotated_display_height() / 2 - 100 - 0;
     disp_init_status("BQ27220 Init ...", &cursor_x, &cursor_y, peri_buf[E_PERI_BQ27220]);
 
     peri_buf[E_PERI_INK_POWER]  = false; 
@@ -550,14 +562,14 @@ void idf_setup()
     cursor_y = epd_rotated_display_height() / 2 - 100 +300;
     disp_init_status("GPS Init ...", &cursor_x, &cursor_y, peri_buf[E_PERI_GPS]);
 
-    // task
-    xTaskCreate(btn_task, "lora_task", 1024 * 3, NULL, INFARED_PRIORITY, &btn_handle);
-    
     printf("LVGL Init\n");
     lv_port_disp_init();
 
     printf("LVGL UI Entry\n");
     ui_entry();
+
+    // task
+    xTaskCreate(btn_task, "lora_task", 1024 * 3, NULL, INFARED_PRIORITY, &btn_handle);
 }
 
 void idf_loop() 

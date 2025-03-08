@@ -81,7 +81,7 @@ const BQ27220DMData gauge_data_memory[] = {
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1StartDOD0,
         .type = BQ27220DMTypeU16,
-        .value.u16 = 4183,
+        .value.u16 = 4173,
     },
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1StartDOD10,
@@ -131,22 +131,22 @@ const BQ27220DMData gauge_data_memory[] = {
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1StartDOD100,
         .type = BQ27220DMTypeU16,
-        .value.u16 = 3299,
+        .value.u16 = 2713,
     },
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1EDV0,
         .type = BQ27220DMTypeU16,
-        .value.u16 = 3300,
+        .value.u16 = 3031,
     },
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1EDV1,
         .type = BQ27220DMTypeU16,
-        .value.u16 = 3321,
+        .value.u16 = 3385,
     },
     {
         .address = BQ27220DMAddressGasGaugingCEDVProfile1EDV2,
         .type = BQ27220DMTypeU16,
-        .value.u16 = 3355,
+        .value.u16 = 3501,
     },
     {
         .address = BQ27220DMAddressCalibrationCurrentDeadband,

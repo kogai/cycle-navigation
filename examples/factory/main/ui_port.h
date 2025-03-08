@@ -98,8 +98,8 @@ uint16_t ui_battery_27220_get_temperature(void);
 uint16_t ui_battery_27220_get_full_capacity(void);
 uint16_t ui_battery_27220_get_design_capacity(void);
 uint16_t ui_battery_27220_get_remain_capacity(void);
-uint16_t ui_battery_27220_get_percent(void);
-uint16_t ui_battery_27220_get_health(void);
+uint16_t ui_battery_27220_get_percent(void);    // percent = remain_capacity / full_capacity
+uint16_t ui_battery_27220_get_health(void);     // health = full_capacity / design_capacity
 const char * ui_battert_27220_get_percent_level(void);
 
 // gsp

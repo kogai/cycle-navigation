@@ -144,9 +144,25 @@ static void epd_board_init(uint32_t epd_row_width) {
 
     // set all epdiy lines to output except TPS interrupt + PWR good
     ESP_ERROR_CHECK(pca9555_set_config(config_reg.port, CFG_PIN_PWRGOOD | CFG_PIN_INT | __CFG_PIN_STV, 1));
-    ESP_ERROR_CHECK(pca9555_set_config(config_reg.port, 0, 0));
+    
+    pca9555_set_inversion(config_reg.port, 0x00, 0);
+    pca9555_set_inversion(config_reg.port, 0x00, 1);
 
+    pca9555_set_config(config_reg.port, 0x00, 0);
     pca9555_set_value(config_reg.port, 0xff, 0);
+    
+    // vTaskDelay(50);
+    // ESP_ERROR_CHECK(pca9555_set_config(config_reg.port, 0xF0, 0));
+
+    // vTaskDelay(50);
+    
+    // pca9555_set_config(config_reg.port, __CFG_PIN_STV, 0);
+    // pca9555_set_value(config_reg.port, 0xff, 0);
+
+    // uint8_t io_val0 = pca9555_read_input(config_reg.port, 0);
+    // uint8_t io_val1 = pca9555_read_input(config_reg.port, 1);
+
+    // printf("io0:0x%x, io1:0x%x\n", io_val0, io_val1);
 
     const EpdDisplay_t* display = epd_get_display();
 

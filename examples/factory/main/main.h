@@ -25,6 +25,9 @@
 #include "SD.h"
 #include "SPI.h"
 
+#define GLOBAL_BUF_LEN 48
+extern char global_buf[GLOBAL_BUF_LEN];
+
 // io_extend
 extern "C" {
     void io_extend_lora_gps_power_on(bool en);

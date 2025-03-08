@@ -10,9 +10,6 @@
 
 #define ARRAY_LEN(a) (sizeof(a)/sizeof(a[0]))
 
-#define GLOBAL_BUF_LEN 48
-char global_buf[GLOBAL_BUF_LEN];
-
 static int scr_refresh_mode;
 static lv_timer_t *taskbar_update_timer = NULL;
 uint16_t taskbar_statue[TASKBAR_ID_MAX] = {0};
