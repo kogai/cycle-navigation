@@ -31,19 +31,22 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-#else 
+#else
 // ESP-IDF
 void idf_setup();
 void idf_loop();
 
-void delay(uint32_t millis) {
+void delay(uint32_t millis)
+{
     vTaskDelay(millis / portTICK_PERIOD_MS);
 }
 
-extern "C" void app_main() {
+extern "C" void app_main()
+{
     idf_setup();
 
-    while (1) {
+    while (1)
+    {
         idf_loop();
     };
 }
@@ -58,7 +61,8 @@ extern "C" void app_main() {
 
 EpdiyHighlevelState hl;
 
-void idf_setup() {
+void idf_setup()
+{
     Wire.begin(39, 40);
 
     epd_init(&DEMO_BOARD, &ED047TC1, EPD_LUT_64K);
@@ -74,8 +78,7 @@ void idf_setup() {
 
     printf(
         "Dimensions after rotation, width: %d height: %d\n\n", epd_rotated_display_width(),
-        epd_rotated_display_height()
-    );
+        epd_rotated_display_height());
 
     // The display bus settings for V7 may be conservative, you can manually
     // override the bus speed to tune for speed, i.e., if you set the PSRAM speed
@@ -86,13 +89,16 @@ void idf_setup() {
     heap_caps_print_heap_info(MALLOC_CAP_SPIRAM);
 }
 
-static inline void checkError(enum EpdDrawError err) {
-    if (err != EPD_DRAW_SUCCESS) {
+static inline void checkError(enum EpdDrawError err)
+{
+    if (err != EPD_DRAW_SUCCESS)
+    {
         ESP_LOGE("demo", "draw error: %X", err);
     }
 }
 
-void draw_progress_bar(int x, int y, int width, int percent, uint8_t* fb) {
+void draw_progress_bar(int x, int y, int width, int percent, uint8_t *fb)
+{
     const uint8_t white = 0xFF;
     const uint8_t black = 0x0;
 
@@ -117,16 +123,20 @@ void draw_progress_bar(int x, int y, int width, int percent, uint8_t* fb) {
     checkError(epd_hl_update_area(&hl, MODE_DU, epd_ambient_temperature(), border));
 }
 
-void idf_loop() {
+void idf_loop()
+{
     // select the font based on display width
-    const EpdFont* font;
-    if (epd_width() < 1000) {
+    const EpdFont *font;
+    if (epd_width() < 1000)
+    {
         font = &FiraSans_12;
-    } else {
+    }
+    else
+    {
         font = &FiraSans_20;
     }
 
-    uint8_t* fb = epd_hl_get_framebuffer(&hl);
+    uint8_t *fb = epd_hl_get_framebuffer(&hl);
 
     epd_poweron();
     epd_clear();
@@ -154,7 +164,8 @@ void idf_loop() {
     checkError(epd_hl_update_screen(&hl, MODE_GL16, temperature));
     epd_poweroff();
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         epd_poweron();
         draw_progress_bar(bar_x, bar_y, 400, i * 10, fb);
         epd_poweroff();
@@ -164,13 +175,13 @@ void idf_loop() {
     cursor_y = epd_rotated_display_height() / 2 + 100;
 
     epd_write_string(
-        font, "Just kidding,\n this is a demo animation 😉", &cursor_x, &cursor_y, fb, &font_props
-    );
+        font, "Just kidding,\n this is a demo animation 😉", &cursor_x, &cursor_y, fb, &font_props);
     epd_poweron();
     checkError(epd_hl_update_screen(&hl, MODE_GL16, temperature));
     epd_poweroff();
 
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 6; i++)
+    {
         epd_poweron();
         draw_progress_bar(bar_x, bar_y, 400, 50 - i * 10, fb);
         epd_poweroff();
@@ -190,8 +201,7 @@ void idf_loop() {
     epd_fill_rect(clear_area, 0xFF, fb);
 
     epd_write_string(
-        font, "Now let's look at some pictures.", &cursor_x, &cursor_y, fb, &font_props
-    );
+        font, "Now let's look at some pictures.", &cursor_x, &cursor_y, fb, &font_props);
     epd_poweron();
     checkError(epd_hl_update_screen(&hl, MODE_GL16, temperature));
     epd_poweroff();
@@ -252,14 +262,13 @@ void idf_loop() {
 
     epd_write_default(
         font,
-        "➸ 16 color grayscale\n"
+        "➸ 17 color grayscale\n"
         "➸ ~250ms - 1700ms for full frame draw 🚀\n"
         "➸ Use with 6\" or 9.7\" EPDs\n"
         "➸ High-quality font rendering ✎🙋\n"
         "➸ Partial update\n"
         "➸ Arbitrary transitions with vendor waveforms",
-        &cursor_x, &cursor_y, fb
-    );
+        &cursor_x, &cursor_y, fb);
 
     EpdRect img_beach_area = {
         .x = 0,
