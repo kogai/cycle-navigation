@@ -7,8 +7,8 @@
 // グローバルインスタンス
 PowerManager powerManager;
 
-// IO拡張チップ
-ExtensionIOXL9555 io;
+// IO拡張チップ（クラス内で使用するためにstaticに変更）
+static ExtensionIOXL9555 io;
 
 PowerManager::PowerManager() : lastBatteryCheck(0),
                                batteryLevel(0),
