@@ -41,6 +41,10 @@
 #define BOARD_PCA9535_INT (38)
 #define BOARD_BOOT_BTN (0)
 
+// IO拡張チップのアドレス
+#define BQ25896_SLAVE_ADDRESS (0x6A)
+#define XL9555_SLAVE_ADDRESS0 (0x20)
+
 // 物理ボタン定義
 // IO拡張チップ（PCA9535PW）を使用したボタン
 #define BUTTON_UP 0     // 上方向ボタン（IO拡張ポート番号）
