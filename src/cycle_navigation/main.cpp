@@ -14,6 +14,11 @@
 #define XPOWERS_CHIP_BQ25896
 #include <XPowersLib.h>
 
+// 定数定義
+#define BQ25896_SLAVE_ADDRESS 0x6B
+#define SerialMon Serial
+#define BATTERY_CHECK_INTERVAL 60000 // バッテリー残量チェック間隔（ミリ秒）
+
 // 使用するフォントを定義
 #include "firasans_12.h"
 
@@ -24,13 +29,12 @@
 // ハイレベル状態の変数
 EpdiyHighlevelState hl;
 
-// バッテリー関連のオブジェクトの外部参照
-extern BQ27220 bq27220;
-extern XPowersPPM PPM;
+// バッテリー関連のオブジェクト
+BQ27220 bq27220;
+XPowersPPM PPM;
 
 // バッテリー残量表示用の変数
 uint16_t batteryPercent = 0;
-const char *batteryIcon = "";
 uint16_t batteryVoltage = 0;
 
 // バッテリー残量を取得する関数
@@ -40,28 +44,6 @@ void updateBatteryStatus()
   {
     batteryPercent = bq27220.getStateOfCharge();
     batteryVoltage = bq27220.getVoltage();
-
-    // バッテリーアイコンの設定
-    if (batteryPercent < 20)
-    {
-      batteryIcon = "🔋"; // 空
-    }
-    else if (batteryPercent < 40)
-    {
-      batteryIcon = "🔋"; // 少し
-    }
-    else if (batteryPercent < 65)
-    {
-      batteryIcon = "🔋"; // 半分
-    }
-    else if (batteryPercent < 90)
-    {
-      batteryIcon = "🔋"; // ほぼ満タン
-    }
-    else
-    {
-      batteryIcon = "🔋"; // 満タン
-    }
   }
 }
 
@@ -69,7 +51,7 @@ void updateBatteryStatus()
 void displayBatteryStatus(uint8_t *framebuffer)
 {
   char batteryText[32];
-  snprintf(batteryText, sizeof(batteryText), "%s %d%% %dmV", batteryIcon, batteryPercent, batteryVoltage);
+  snprintf(batteryText, sizeof(batteryText), "バッテリー: %d%% %dmV", batteryPercent, batteryVoltage);
 
   // 画面右上に表示
   int cursor_x = epd_rotated_display_width() - 10;
@@ -121,7 +103,7 @@ void setup()
   }
 
   // E-Paperディスプレイの初期化
-  epd_init(&DEMO_BOARD, &ED047TC1, EPD_LUT_64K);
+  epd_init(&DEMO_BOARD, NULL, EPD_LUT_64K);
 
   // VCOMの設定（ハードウェアポテンショメータで設定されている場合は不要）
   epd_set_vcom(1560);
