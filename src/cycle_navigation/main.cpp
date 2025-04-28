@@ -42,7 +42,7 @@ void setup()
   hl = epd_hl_init(WAVEFORM);
 
   // 回転の設定（デフォルトはEPD_ROT_LANDSCAPE）
-  epd_set_rotation(EPD_ROT_PORTRAIT);
+  epd_set_rotation(EPD_ROT_INVERTED_PORTRAIT);
 
   // 回転後のディスプレイサイズを表示
   SerialMon.printf("ディスプレイサイズ: 幅 %d, 高さ %d\n",
