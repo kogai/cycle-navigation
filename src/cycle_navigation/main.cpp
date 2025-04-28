@@ -51,7 +51,7 @@ void updateBatteryStatus()
 void displayBatteryStatus(uint8_t *framebuffer)
 {
   char batteryText[32];
-  snprintf(batteryText, sizeof(batteryText), "バッテリー: %d%% %dmV", batteryPercent, batteryVoltage);
+  snprintf(batteryText, sizeof(batteryText), "Battery: %d%% %dmV", batteryPercent, batteryVoltage);
 
   // 画面右上に表示
   int cursor_x = epd_rotated_display_width() - 10;
