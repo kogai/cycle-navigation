@@ -103,7 +103,7 @@ void setup()
   }
 
   // E-Paperディスプレイの初期化
-  epd_init(&DEMO_BOARD, NULL, EPD_LUT_64K);
+  epd_init(&DEMO_BOARD, &ED047TC1, EPD_LUT_64K);
 
   // VCOMの設定（ハードウェアポテンショメータで設定されている場合は不要）
   epd_set_vcom(1560);
