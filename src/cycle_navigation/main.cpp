@@ -10,7 +10,8 @@
 #include "config.h"
 
 // バッテリー関連のライブラリ
-#include <BQ27220.h>
+#include "bq27220.h"
+#define XPOWERS_CHIP_BQ25896
 #include <XPowersLib.h>
 
 // 使用するフォントを定義
@@ -23,9 +24,9 @@
 // ハイレベル状態の変数
 EpdiyHighlevelState hl;
 
-// バッテリー関連のオブジェクト
-BQ27220 bq27220;
-XPowersPPM PPM;
+// バッテリー関連のオブジェクトの外部参照
+extern BQ27220 bq27220;
+extern XPowersPPM PPM;
 
 // バッテリー残量表示用の変数
 uint16_t batteryPercent = 0;
