@@ -55,7 +55,7 @@ void displayBatteryStatus(uint8_t *framebuffer)
 
   // 画面右上に表示
   int cursor_x = epd_rotated_display_width() - 10;
-  int cursor_y = 20;
+  int cursor_y = 30;
 
   // フォントプロパティの設定（右揃え）
   EpdFontProperties font_props = epd_font_properties_default();
