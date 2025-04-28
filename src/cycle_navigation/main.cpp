@@ -12,7 +12,8 @@
 
 // 定数定義
 #define SerialMon Serial
-#define BATTERY_CHECK_INTERVAL 60000 // バッテリー残量チェック間隔（ミリ秒）
+// #define BATTERY_CHECK_INTERVAL 60000 // バッテリー残量チェック間隔（ミリ秒）
+#define BATTERY_CHECK_INTERVAL 5000 // バッテリー残量チェック間隔（ミリ秒）
 
 // 使用するフォントを定義
 #include "firasans_12.h"
@@ -130,9 +131,6 @@ void setup()
 
 void loop()
 {
-  // 1秒ごとにメッセージを表示（シリアルのみ）
-  SerialMon.println("動作中...");
-
   // 60秒ごとにバッテリー残量を更新して表示
   static unsigned long lastBatteryUpdate = 0;
   if (millis() - lastBatteryUpdate > BATTERY_CHECK_INTERVAL)
