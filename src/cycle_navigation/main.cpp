@@ -9,6 +9,10 @@
 #include <epdiy.h>
 #include "config.h"
 
+// バッテリー関連のライブラリ
+#include <BQ27220.h>
+#include <XPowersLib.h>
+
 // 使用するフォントを定義
 #include "firasans_12.h"
 
@@ -18,6 +22,65 @@
 
 // ハイレベル状態の変数
 EpdiyHighlevelState hl;
+
+// バッテリー関連のオブジェクト
+BQ27220 bq27220;
+XPowersPPM PPM;
+
+// バッテリー残量表示用の変数
+uint16_t batteryPercent = 0;
+const char *batteryIcon = "";
+uint16_t batteryVoltage = 0;
+
+// バッテリー残量を取得する関数
+void updateBatteryStatus()
+{
+  if (bq27220.init())
+  {
+    batteryPercent = bq27220.getStateOfCharge();
+    batteryVoltage = bq27220.getVoltage();
+
+    // バッテリーアイコンの設定
+    if (batteryPercent < 20)
+    {
+      batteryIcon = "🔋"; // 空
+    }
+    else if (batteryPercent < 40)
+    {
+      batteryIcon = "🔋"; // 少し
+    }
+    else if (batteryPercent < 65)
+    {
+      batteryIcon = "🔋"; // 半分
+    }
+    else if (batteryPercent < 90)
+    {
+      batteryIcon = "🔋"; // ほぼ満タン
+    }
+    else
+    {
+      batteryIcon = "🔋"; // 満タン
+    }
+  }
+}
+
+// バッテリー残量を表示する関数
+void displayBatteryStatus(uint8_t *framebuffer)
+{
+  char batteryText[32];
+  snprintf(batteryText, sizeof(batteryText), "%s %d%% %dmV", batteryIcon, batteryPercent, batteryVoltage);
+
+  // 画面右上に表示
+  int cursor_x = epd_rotated_display_width() - 10;
+  int cursor_y = 20;
+
+  // フォントプロパティの設定（右揃え）
+  EpdFontProperties font_props = epd_font_properties_default();
+  font_props.flags = EPD_DRAW_ALIGN_RIGHT;
+
+  // バッテリー情報の描画
+  epd_write_string(&FiraSans_12, batteryText, &cursor_x, &cursor_y, framebuffer, &font_props);
+}
 
 void setup()
 {
@@ -31,6 +94,30 @@ void setup()
 
   // I2Cの初期化
   Wire.begin(BOARD_SDA, BOARD_SCL);
+
+  // バッテリー関連の初期化
+  bool bq27220_initialized = bq27220.init();
+  bool ppm_initialized = PPM.init(Wire, BOARD_SDA, BOARD_SCL, BQ25896_SLAVE_ADDRESS);
+
+  if (bq27220_initialized)
+  {
+    SerialMon.println("BQ27220初期化成功");
+    updateBatteryStatus();
+  }
+  else
+  {
+    SerialMon.println("BQ27220初期化失敗");
+  }
+
+  if (ppm_initialized)
+  {
+    SerialMon.println("BQ25896初期化成功");
+    PPM.enableMeasure(); // 電圧データを取得するためにADCを有効化
+  }
+  else
+  {
+    SerialMon.println("BQ25896初期化失敗");
+  }
 
   // E-Paperディスプレイの初期化
   epd_init(&DEMO_BOARD, &ED047TC1, EPD_LUT_64K);
@@ -72,6 +159,9 @@ void setup()
   // "Hello World"テキストの描画
   epd_write_string(&FiraSans_12, "Hello World", &cursor_x, &cursor_y, fb, &font_props);
 
+  // バッテリー残量の表示
+  displayBatteryStatus(fb);
+
   // 画面の更新
   epd_poweron();
   enum EpdDrawError err = epd_hl_update_screen(&hl, MODE_GL16, temperature);
@@ -88,5 +178,50 @@ void loop()
 {
   // 1秒ごとにメッセージを表示（シリアルのみ）
   SerialMon.println("動作中...");
+
+  // 60秒ごとにバッテリー残量を更新して表示
+  static unsigned long lastBatteryUpdate = 0;
+  if (millis() - lastBatteryUpdate > BATTERY_CHECK_INTERVAL)
+  {
+    lastBatteryUpdate = millis();
+
+    // バッテリー残量の更新
+    updateBatteryStatus();
+
+    // フレームバッファの取得
+    uint8_t *fb = epd_hl_get_framebuffer(&hl);
+
+    // 画面をクリア
+    epd_poweron();
+    epd_clear();
+    epd_poweroff();
+
+    // テキスト表示の設定
+    int cursor_x = epd_rotated_display_width() / 2;
+    int cursor_y = epd_rotated_display_height() / 2;
+
+    // フォントプロパティの設定（中央揃え）
+    EpdFontProperties font_props = epd_font_properties_default();
+    font_props.flags = EPD_DRAW_ALIGN_CENTER;
+
+    // "Hello World"テキストの描画
+    epd_write_string(&FiraSans_12, "Hello World", &cursor_x, &cursor_y, fb, &font_props);
+
+    // バッテリー残量の表示
+    displayBatteryStatus(fb);
+
+    // 画面の更新
+    int temperature = epd_ambient_temperature();
+    epd_poweron();
+    enum EpdDrawError err = epd_hl_update_screen(&hl, MODE_GL16, temperature);
+    if (err != EPD_DRAW_SUCCESS)
+    {
+      SerialMon.printf("描画エラー: %X\n", err);
+    }
+    epd_poweroff();
+
+    SerialMon.printf("バッテリー残量: %d%%, 電圧: %dmV\n", batteryPercent, batteryVoltage);
+  }
+
   delay(1000);
 }
