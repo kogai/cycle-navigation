@@ -8,14 +8,9 @@
 #include <Wire.h>
 #include <epdiy.h>
 #include "config.h"
-
-// バッテリー関連のライブラリ
-#include "bq27220.h"
-#define XPOWERS_CHIP_BQ25896
-#include <XPowersLib.h>
+#include "battery/battery_manager.h"
 
 // 定数定義
-#define BQ25896_SLAVE_ADDRESS 0x6B
 #define SerialMon Serial
 #define BATTERY_CHECK_INTERVAL 60000 // バッテリー残量チェック間隔（ミリ秒）
 
@@ -29,28 +24,16 @@
 // ハイレベル状態の変数
 EpdiyHighlevelState hl;
 
-// バッテリー関連のオブジェクト
-BQ27220 bq27220;
-XPowersPPM PPM;
-
-// バッテリー残量表示用の変数
-uint16_t batteryPercent = 0;
-uint16_t batteryVoltage = 0;
-
-// バッテリー残量を取得する関数
-void updateBatteryStatus()
-{
-  if (bq27220.init())
-  {
-    batteryPercent = bq27220.getStateOfCharge();
-    batteryVoltage = bq27220.getVoltage();
-  }
-}
+// バッテリー管理クラスのインスタンス
+BatteryManager batteryManager;
 
 // バッテリー残量を表示する関数
-void displayBatteryStatus(uint8_t *framebuffer)
+void displayBatteryStatus(uint8_t *framebuffer, BatteryManager &battery)
 {
   char batteryText[32];
+  uint16_t batteryPercent = battery.getPercent();
+  uint16_t batteryVoltage = battery.getVoltage();
+
   snprintf(batteryText, sizeof(batteryText), "Battery: %d%% %dmV", batteryPercent, batteryVoltage);
 
   // 画面右上に表示
@@ -79,27 +62,15 @@ void setup()
   Wire.begin(BOARD_SDA, BOARD_SCL);
 
   // バッテリー関連の初期化
-  bool bq27220_initialized = bq27220.init();
-  bool ppm_initialized = PPM.init(Wire, BOARD_SDA, BOARD_SCL, BQ25896_SLAVE_ADDRESS);
+  bool battery_initialized = batteryManager.init(Wire, BOARD_SDA, BOARD_SCL);
 
-  if (bq27220_initialized)
+  if (battery_initialized)
   {
-    SerialMon.println("BQ27220初期化成功");
-    updateBatteryStatus();
+    SerialMon.println("バッテリー管理システム初期化成功");
   }
   else
   {
-    SerialMon.println("BQ27220初期化失敗");
-  }
-
-  if (ppm_initialized)
-  {
-    SerialMon.println("BQ25896初期化成功");
-    PPM.enableMeasure(); // 電圧データを取得するためにADCを有効化
-  }
-  else
-  {
-    SerialMon.println("BQ25896初期化失敗");
+    SerialMon.println("バッテリー管理システム初期化失敗");
   }
 
   // E-Paperディスプレイの初期化
@@ -143,7 +114,7 @@ void setup()
   epd_write_string(&FiraSans_12, "Hello World", &cursor_x, &cursor_y, fb, &font_props);
 
   // バッテリー残量の表示
-  displayBatteryStatus(fb);
+  displayBatteryStatus(fb, batteryManager);
 
   // 画面の更新
   epd_poweron();
@@ -168,9 +139,6 @@ void loop()
   {
     lastBatteryUpdate = millis();
 
-    // バッテリー残量の更新
-    updateBatteryStatus();
-
     // フレームバッファの取得
     uint8_t *fb = epd_hl_get_framebuffer(&hl);
 
@@ -191,7 +159,7 @@ void loop()
     epd_write_string(&FiraSans_12, "Hello World", &cursor_x, &cursor_y, fb, &font_props);
 
     // バッテリー残量の表示
-    displayBatteryStatus(fb);
+    displayBatteryStatus(fb, batteryManager);
 
     // 画面の更新
     int temperature = epd_ambient_temperature();
@@ -203,7 +171,9 @@ void loop()
     }
     epd_poweroff();
 
-    SerialMon.printf("バッテリー残量: %d%%, 電圧: %dmV\n", batteryPercent, batteryVoltage);
+    SerialMon.printf("バッテリー残量: %d%%, 電圧: %dmV\n",
+                     batteryManager.getPercent(),
+                     batteryManager.getVoltage());
   }
 
   delay(1000);
