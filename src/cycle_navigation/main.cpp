@@ -12,8 +12,8 @@
 
 // 定数定義
 #define SerialMon Serial
-// #define BATTERY_CHECK_INTERVAL 60000 // バッテリー残量チェック間隔（ミリ秒）
-#define BATTERY_CHECK_INTERVAL 5000 // バッテリー残量チェック間隔（ミリ秒）
+#define BATTERY_CHECK_INTERVAL 60000 // バッテリー残量チェック間隔（ミリ秒）
+// #define BATTERY_CHECK_INTERVAL 5000 // バッテリー残量チェック間隔（ミリ秒）
 
 // 使用するフォントを定義
 #include "firasans_12.h"
