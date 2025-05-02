@@ -12,6 +12,9 @@ BatteryManager::BatteryManager() : initialized(false)
 // 初期化
 bool BatteryManager::init(TwoWire &wire, int sda, int scl)
 {
+  // BQ27220の初期化前にbegin()を呼び出す
+  wire.begin(sda, scl);
+
   bool bq27220_initialized = bq27220.init();
   bool ppm_initialized = PPM.init(wire, sda, scl, BQ25896_SLAVE_ADDRESS);
 

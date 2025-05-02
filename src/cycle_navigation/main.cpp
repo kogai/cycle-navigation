@@ -34,10 +34,7 @@ void setup()
   SerialMon.println("Hello World!");
   SerialMon.println("サイクルナビゲーション - 初期テスト");
 
-  // I2Cの初期化
-  Wire.begin(BOARD_SDA, BOARD_SCL);
-
-  // バッテリー関連の初期化
+  // バッテリー関連の初期化（内部でI2Cの初期化も行う）
   bool battery_initialized = batteryManager.init(Wire, BOARD_SDA, BOARD_SCL);
 
   if (battery_initialized)
