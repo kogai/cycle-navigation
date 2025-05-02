@@ -26,8 +26,9 @@ void setup()
   SerialMon.begin(115200);
 
   world.init(Wire, BOARD_SDA, BOARD_SCL);
-  world.render();
+  // world.render();
   SerialMon.println("サイクルナビゲーション - 初期テスト");
+  // 画面の更新
   // world.render();
   // SerialMon.println("描画サイクルを終了");
 }
@@ -36,6 +37,6 @@ void loop()
 {
   // SerialMon.println("描画サイクルを開始");
   world.render();
-  SerialMon.println("描画サイクルを終了");
-  delay(1000);
+  // SerialMon.println("描画サイクルを終了");
+  delay(5000);
 }

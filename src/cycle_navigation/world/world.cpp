@@ -14,17 +14,12 @@ void World::init(TwoWire &wire, int sda, int scl)
 {
     battery.init(wire, sda, scl);
     display.init();
-    // display.clearScreen();
 }
 
 void World::render()
 {
     display.clearScreen();
-    // epd_poweron();
-    // epd_clear();
-    display.displayCenteredText("Hello World", &FiraSans_12);
-    display.displayBatteryStatus(battery, &FiraSans_12);
-    // epd_poweroff();
+    display.displayCenteredText("Hello World?", &FiraSans_12);
+    // display.displayBatteryStatus(battery, &FiraSans_12);
     display.updateScreen();
-    // epd_write_string(font, batteryText, &cursor_x, &cursor_y, fb, &font_props);
 }
