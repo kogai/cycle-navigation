@@ -19,7 +19,7 @@
 
 Battery battery;
 Display display;
-World world;
+World world(battery, display);
 
 void setup()
 {
@@ -27,38 +27,8 @@ void setup()
   SerialMon.begin(115200);
   delay(1000); // 安定化のための遅延
 
-  // Hello Worldメッセージの表示（シリアル）
-  SerialMon.println("Hello World!");
   SerialMon.println("サイクルナビゲーション - 初期テスト");
-
-  // バッテリー関連の初期化（内部でI2Cの初期化も行う）
-  bool battery_initialized = battery.init(Wire, BOARD_SDA, BOARD_SCL);
-
-  if (battery_initialized)
-  {
-    SerialMon.println("バッテリー管理システム初期化成功");
-  }
-  else
-  {
-    SerialMon.println("バッテリー管理システム初期化失敗");
-  }
-
-  // ディスプレイの初期化
-  bool display_initialized = display.init();
-
-  if (display_initialized)
-  {
-    SerialMon.println("ディスプレイ初期化成功");
-  }
-  else
-  {
-    SerialMon.println("ディスプレイ初期化失敗");
-  }
-
-  // 回転後のディスプレイサイズを表示
-  SerialMon.printf("ディスプレイサイズ: 幅 %d, 高さ %d\n",
-                   display.getWidth(),
-                   display.getHeight());
+  world.init(Wire, BOARD_SDA, BOARD_SCL);
 }
 
 void loop()

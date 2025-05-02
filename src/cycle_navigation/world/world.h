@@ -14,14 +14,11 @@
 class World
 {
 public:
-  // コンストラクタ
   World(Battery &battery, Display &display);
-
-  // 描画処理
+  void init(TwoWire &wire, int sda, int scl);
   void render();
 
 private:
-  // バッテリーとディスプレイへの参照
   Battery &battery;
   Display &display;
 };
