@@ -97,6 +97,32 @@ void Display::updateScreen()
   // 画面の更新
   epd_poweron();
   enum EpdDrawError err = epd_hl_update_screen(&hl, MODE_GL16, temperature);
+  SerialMon.printf("描画結果: %d\n", err);
+  if (err != EPD_DRAW_SUCCESS)
+  {
+    SerialMon.println("描画エラーが発生しました");
+    switch (err)
+    {
+    case EPD_DRAW_INVALID_PACKING_MODE:
+      SerialMon.println("無効なパッキングモード");
+      break;
+    case EPD_DRAW_LOOKUP_NOT_IMPLEMENTED:
+      SerialMon.println("ルックアップテーブル未実装");
+      break;
+    case EPD_DRAW_MODE_NOT_FOUND:
+      SerialMon.println("モードが見つかりません");
+      break;
+    case EPD_DRAW_NO_PHASES_AVAILABLE:
+      SerialMon.println("利用可能なフェーズがありません");
+      break;
+    case EPD_DRAW_EMPTY_LINE_QUEUE:
+      SerialMon.println("ラインキューが空です");
+      break;
+    default:
+      SerialMon.printf("その他のエラー: 0x%X\n", err);
+      break;
+    }
+  }
   epd_poweroff();
 }
 
