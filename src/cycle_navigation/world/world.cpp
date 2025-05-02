@@ -18,8 +18,15 @@ void World::init(TwoWire &wire, int sda, int scl)
 
 void World::render()
 {
-    display.clearScreen();
-    display.displayCenteredText("Hello World?", &FiraSans_12);
-    // display.displayBatteryStatus(battery, &FiraSans_12);
-    display.updateScreen();
+    // TODO: PWRボタン押下イベントへのコールバック登録
+    // TODO: タイマーイベントへのコールバック登録
+    // TODO: ディープスリープ
+}
+
+void World::render_()
+{
+    // display.clearScreen();
+    // display.displayCenteredText("Hello World?", &FiraSans_12);
+    // // display.displayBatteryStatus(battery, &FiraSans_12);
+    // display.updateScreen();
 }

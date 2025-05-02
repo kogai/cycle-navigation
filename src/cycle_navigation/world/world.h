@@ -19,6 +19,7 @@ public:
   void render();
 
 private:
+  void render_();
   Battery &battery;
   Display &display;
 };
