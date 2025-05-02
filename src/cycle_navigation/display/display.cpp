@@ -93,13 +93,13 @@ void Display::updateScreen()
     return;
 
   epd_poweron();
+  epd_clear();
   enum EpdDrawError err = epd_hl_update_screen(&hl, MODE_GL16, epd_ambient_temperature());
   if (err != EPD_DRAW_SUCCESS)
   {
     SerialMon.printf("描画エラーが発生しました %d\n", err);
   }
   epd_poweroff();
-  // esp_deep_sleep_start();
 }
 
 // TODO: 多分要らない

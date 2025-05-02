@@ -19,6 +19,7 @@ public:
   void start();
 
 private:
+  void enterDeepSleep();
   void render();
   Battery &battery;
   Display &display;
