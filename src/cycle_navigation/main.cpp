@@ -9,20 +9,17 @@
 #include "config.h"
 #include "battery/battery.h"
 #include "display/display.h"
+#include "world/world.h"
+#include "firasans_12.h"
 
 // 定数定義
 #define SerialMon Serial
 #define BATTERY_CHECK_INTERVAL 60000 // バッテリー残量チェック間隔（ミリ秒）
 // #define BATTERY_CHECK_INTERVAL 5000 // バッテリー残量チェック間隔（ミリ秒）
 
-// 使用するフォントを定義
-#include "firasans_12.h"
-
-// バッテリー管理クラスのインスタンス
 Battery battery;
-
-// ディスプレイ管理クラスのインスタンス
 Display display;
+World world;
 
 void setup()
 {

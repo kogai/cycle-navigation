@@ -6,6 +6,6 @@
 
 // コンストラクタ
 World::World(Battery &battery, Display &display)
-    : battery(battery), display(display), lastBatteryUpdate(0), initialized(false)
+    : battery(battery), display(display)
 {
 }
