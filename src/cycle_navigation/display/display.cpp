@@ -2,16 +2,16 @@
  * ディスプレイ管理モジュール実装
  */
 
-#include "display_manager.h"
+#include "display.h"
 #include "../firasans_12.h"
 
 // コンストラクタ
-DisplayManager::DisplayManager() : initialized(false)
+Display::Display() : initialized(false)
 {
 }
 
 // 初期化
-bool DisplayManager::init()
+bool Display::init()
 {
   // E-Paperディスプレイの初期化
   epd_init(&epd_board_v7, &ED047TC1, EPD_LUT_64K);
@@ -30,7 +30,7 @@ bool DisplayManager::init()
 }
 
 // 画面をクリア
-void DisplayManager::clearScreen()
+void Display::clearScreen()
 {
   if (!initialized)
     return;
@@ -41,7 +41,7 @@ void DisplayManager::clearScreen()
 }
 
 // テキストを中央に表示
-void DisplayManager::displayCenteredText(const char *text, const EpdFont *font)
+void Display::displayCenteredText(const char *text, const EpdFont *font)
 {
   if (!initialized)
     return;
@@ -61,7 +61,7 @@ void DisplayManager::displayCenteredText(const char *text, const EpdFont *font)
 }
 
 // バッテリー情報を表示
-void DisplayManager::displayBatteryStatus(BatteryManager &battery, const EpdFont *font)
+void Display::displayBatteryStatus(Battery &battery, const EpdFont *font)
 {
   if (!initialized)
     return;
@@ -86,7 +86,7 @@ void DisplayManager::displayBatteryStatus(BatteryManager &battery, const EpdFont
 }
 
 // 画面を更新
-void DisplayManager::updateScreen()
+void Display::updateScreen()
 {
   if (!initialized)
     return;
@@ -101,7 +101,7 @@ void DisplayManager::updateScreen()
 }
 
 // フレームバッファを取得
-uint8_t *DisplayManager::getFramebuffer()
+uint8_t *Display::getFramebuffer()
 {
   if (!initialized)
     return nullptr;
@@ -109,13 +109,13 @@ uint8_t *DisplayManager::getFramebuffer()
 }
 
 // 回転後のディスプレイ幅を取得
-int DisplayManager::getWidth()
+int Display::getWidth()
 {
   return epd_rotated_display_width();
 }
 
 // 回転後のディスプレイ高さを取得
-int DisplayManager::getHeight()
+int Display::getHeight()
 {
   return epd_rotated_display_height();
 }

@@ -9,13 +9,13 @@
 #include <Arduino.h>
 #include <epdiy.h>
 #include "../config.h"
-#include "../battery/battery_manager.h"
+#include "../battery/battery.h"
 
-class DisplayManager
+class Display
 {
 public:
   // コンストラクタ
-  DisplayManager();
+  Display();
 
   // 初期化
   bool init();
@@ -27,7 +27,7 @@ public:
   void displayCenteredText(const char *text, const EpdFont *font);
 
   // バッテリー情報を表示
-  void displayBatteryStatus(BatteryManager &battery, const EpdFont *font);
+  void displayBatteryStatus(Battery &battery, const EpdFont *font);
 
   // 画面を更新
   void updateScreen();

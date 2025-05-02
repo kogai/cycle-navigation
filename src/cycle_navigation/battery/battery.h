@@ -16,11 +16,11 @@
 // BQ25896のI2Cアドレス
 #define BQ25896_SLAVE_ADDRESS 0x6B
 
-class BatteryManager
+class Battery
 {
 public:
   // コンストラクタ
-  BatteryManager();
+  Battery();
 
   // 初期化
   bool init(TwoWire &wire, int sda, int scl);

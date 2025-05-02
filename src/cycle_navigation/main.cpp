@@ -7,8 +7,8 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "config.h"
-#include "battery/battery_manager.h"
-#include "display/display_manager.h"
+#include "battery/battery.h"
+#include "display/display.h"
 
 // 定数定義
 #define SerialMon Serial
@@ -19,10 +19,10 @@
 #include "firasans_12.h"
 
 // バッテリー管理クラスのインスタンス
-BatteryManager batteryManager;
+Battery battery;
 
 // ディスプレイ管理クラスのインスタンス
-DisplayManager displayManager;
+Display display;
 
 void setup()
 {
@@ -35,7 +35,7 @@ void setup()
   SerialMon.println("サイクルナビゲーション - 初期テスト");
 
   // バッテリー関連の初期化（内部でI2Cの初期化も行う）
-  bool battery_initialized = batteryManager.init(Wire, BOARD_SDA, BOARD_SCL);
+  bool battery_initialized = battery.init(Wire, BOARD_SDA, BOARD_SCL);
 
   if (battery_initialized)
   {
@@ -47,7 +47,7 @@ void setup()
   }
 
   // ディスプレイの初期化
-  bool display_initialized = displayManager.init();
+  bool display_initialized = display.init();
 
   if (display_initialized)
   {
@@ -60,8 +60,8 @@ void setup()
 
   // 回転後のディスプレイサイズを表示
   SerialMon.printf("ディスプレイサイズ: 幅 %d, 高さ %d\n",
-                   displayManager.getWidth(),
-                   displayManager.getHeight());
+                   display.getWidth(),
+                   display.getHeight());
 }
 
 void loop()
@@ -73,21 +73,22 @@ void loop()
     lastBatteryUpdate = millis();
 
     // 画面をクリア
-    displayManager.clearScreen();
+    display.clearScreen();
 
     // "Hello World"テキストの描画
-    displayManager.displayCenteredText("Hello World", &FiraSans_12);
+    display.displayCenteredText("Hello World", &FiraSans_12);
 
     // バッテリー残量の表示
-    displayManager.displayBatteryStatus(batteryManager, &FiraSans_12);
+    display.displayBatteryStatus(battery, &FiraSans_12);
 
     // 画面の更新
-    displayManager.updateScreen();
+    display.updateScreen();
 
     SerialMon.printf("バッテリー残量: %d%%, 電圧: %dmV\n",
-                     batteryManager.getPercent(),
-                     batteryManager.getVoltage());
+                     battery.getPercent(),
+                     battery.getVoltage());
   }
 
-  delay(1000);
+  // delay(1000);
+  // TODO: sleepする
 }
