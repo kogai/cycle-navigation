@@ -1,0 +1,2 @@
+- setup で[ 3312][E][Wire.cpp:513] requestFrom(): i2cRead returned Error 263 エラー
+- loop で画面が明転・暗転する
