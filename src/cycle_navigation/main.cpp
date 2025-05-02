@@ -62,20 +62,6 @@ void setup()
   SerialMon.printf("ディスプレイサイズ: 幅 %d, 高さ %d\n",
                    displayManager.getWidth(),
                    displayManager.getHeight());
-
-  // 画面をクリア
-  displayManager.clearScreen();
-
-  // "Hello World"テキストの描画
-  displayManager.displayCenteredText("Hello World", &FiraSans_12);
-
-  // バッテリー残量の表示
-  displayManager.displayBatteryStatus(batteryManager, &FiraSans_12);
-
-  // 画面の更新
-  displayManager.updateScreen();
-
-  SerialMon.println("E-Paperディスプレイに「Hello World」を表示しました");
 }
 
 void loop()
