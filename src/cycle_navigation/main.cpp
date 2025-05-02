@@ -26,7 +26,7 @@ void setup()
   SerialMon.begin(115200);
 
   world.init(Wire, BOARD_SDA, BOARD_SCL);
-  world.render();
+  world.start();
   SerialMon.println("サイクルナビゲーション - 初期テスト");
 }
 

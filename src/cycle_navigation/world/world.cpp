@@ -16,14 +16,14 @@ void World::init(TwoWire &wire, int sda, int scl)
     display.init();
 }
 
-void World::render()
+void World::start()
 {
     // TODO: PWRボタン押下イベントへのコールバック登録
     // TODO: タイマーイベントへのコールバック登録
     // TODO: ディープスリープ
 }
 
-void World::render_()
+void World::render()
 {
     // display.clearScreen();
     // display.displayCenteredText("Hello World?", &FiraSans_12);

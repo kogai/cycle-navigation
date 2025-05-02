@@ -16,10 +16,10 @@ class World
 public:
   World(Battery &battery, Display &display);
   void init(TwoWire &wire, int sda, int scl);
-  void render();
+  void start();
 
 private:
-  void render_();
+  void render();
   Battery &battery;
   Display &display;
 };
