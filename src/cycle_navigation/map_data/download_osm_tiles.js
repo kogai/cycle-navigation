@@ -23,14 +23,9 @@ const OUTPUT_DIR = path.join(__dirname, "tiles");
 function latLonToTile(lat, lon, zoom) {
   const n = Math.pow(2, zoom);
   const x = Math.floor(((lon + 180) / 360) * n);
+  const latRad = (lat * Math.PI) / 180;
   const y = Math.floor(
-    ((1 -
-      Math.log(
-        Math.tan((lat * Math.PI) / 180) + 1 / Math.cos((lat * Math.PI) / 180)
-      ) /
-        Math.PI) /
-      2) *
-      n
+    ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * n
   );
   return { x, y };
 }
@@ -45,8 +40,19 @@ function latLonToTile(lat, lon, zoom) {
  * @returns {Array} タイル情報の配列 [{url, x, y, z}]
  */
 function generateTileUrls(minLat, minLon, maxLat, maxLon, zoom) {
-  const minTile = latLonToTile(minLat, minLon, zoom);
-  const maxTile = latLonToTile(maxLat, maxLon, zoom);
+  // 緯度経度の順序を確認（北緯が大きい、東経が大きい）
+  const minLatFixed = Math.min(minLat, maxLat);
+  const maxLatFixed = Math.max(minLat, maxLat);
+  const minLonFixed = Math.min(minLon, maxLon);
+  const maxLonFixed = Math.max(minLon, maxLon);
+
+  // タイル座標に変換
+  const minTile = latLonToTile(maxLatFixed, minLonFixed, zoom); // 北緯が大きい方がY座標は小さくなる
+  const maxTile = latLonToTile(minLatFixed, maxLonFixed, zoom);
+
+  console.log(
+    `Tile coordinates: (${minTile.x},${minTile.y}) to (${maxTile.x},${maxTile.y})`
+  );
 
   const tiles = [];
 
@@ -155,10 +161,7 @@ async function main() {
     `Downloading map tiles for area: (${minLat},${minLon}) to (${maxLat},${maxLon}) at zoom level ${zoom}`
   );
 
-  // タイル情報を生成
   const tiles = generateTileUrls(minLat, minLon, maxLat, maxLon, zoom);
-
-  // タイルをダウンロード
   const downloadedCount = await downloadTiles(tiles);
 
   console.log(
@@ -166,7 +169,6 @@ async function main() {
   );
 }
 
-// スクリプト実行時に自動的にダウンロードを開始
 main().catch((error) => {
   console.error(`Error: ${error.message}`);
   process.exit(1);
